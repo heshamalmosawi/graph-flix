@@ -14,7 +14,5 @@ public class UserDTO {
     private String email;
     @NotBlank
     private String role;
-    private String avatarMediaId; // Reference to Media collection
-    private String avatarBase64; // Base64 encoded avatar image
 
 }

@@ -20,13 +20,11 @@ public class AuthService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final AvatarEventService avatarEventService;
     private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepo, PasswordEncoder passwordEncoder, AvatarEventService avatarEventService, JwtService jwtService) {
+    public AuthService(UserRepository userRepo, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.avatarEventService = avatarEventService;
         this.jwtService = jwtService;
     }
 
@@ -38,7 +36,6 @@ public class AuthService {
         validateRegistrationRequest(req);
         validateEmailNotTaken(req.getEmail());
         validateRole(req.getRole());
-        validateAvatarPermission(req.getRole(), req.getAvatar_b64());
 
         User user = User.builder()
                 .name(req.getName())
@@ -49,7 +46,6 @@ public class AuthService {
 
         User savedUser = this.userRepo.save(user);
 
-        publishAvatarIfSeller(savedUser.getId(), req.getRole(), req.getAvatar_b64());
     }
 
     private void validateRegistrationRequest(RegisterRequest req) {
@@ -82,21 +78,6 @@ public class AuthService {
     private void validateRole(String role) {
         if (role == null || (!role.equals(ROLE_CLIENT) && !role.equals(ROLE_SELLER))) {
             throw new RuntimeException("Invalid role. Must be 'client' or 'sellers'");
-        }
-    }
-
-    private void validateAvatarPermission(String role, String avatarB64) {
-        boolean hasAvatar = avatarB64 != null && !avatarB64.isEmpty();
-        if (!role.equals(ROLE_SELLER) && hasAvatar) {
-            throw new RuntimeException("Only sellers can have an avatar");
-        }
-    }
-
-    private void publishAvatarIfSeller(String userId, String role, String avatarB64) {
-        boolean hasAvatar = avatarB64 != null && !avatarB64.isEmpty();
-        if (role.equals(ROLE_SELLER) && hasAvatar) {
-            String contentType = "image/jpeg"; // Default, could be detected from base64
-            avatarEventService.publishAvatarUploadEvent(userId, avatarB64, contentType);
         }
     }
 

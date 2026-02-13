@@ -2,7 +2,6 @@ package com.sayedhesham.userservice.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sayedhesham.userservice.dto.UserDTO;
@@ -16,9 +15,6 @@ public class UserService {
     private static final String USER_NOT_FOUND = "User not found";
 
     private final UserRepository userRepo;
-
-    @Autowired
-    private AvatarEventService avatarEventService;
 
     public UserService(UserRepository userRepository) {
         this.userRepo = userRepository;
@@ -43,7 +39,6 @@ public class UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .avatarMediaId(user.getAvatarMediaId())
                 .build();
     }
 
@@ -53,14 +48,12 @@ public class UserService {
 
         updateBasicFields(existingUser, user);
         updateRole(existingUser, user.getRole());
-        handleAvatarUpdate(id, user.getAvatarBase64());
 
         User updatedUser = userRepo.save(existingUser);
         return UserDTO.builder()
                 .name(updatedUser.getName())
                 .email(updatedUser.getEmail())
                 .role(updatedUser.getRole())
-                .avatarMediaId(updatedUser.getAvatarMediaId())
                 .build();
     }
 
@@ -82,46 +75,6 @@ public class UserService {
         } else {
             throw new RuntimeException("Invalid role");
         }
-    }
-
-    private void handleAvatarUpdate(String userId, String avatarBase64) {
-        if (avatarBase64 == null || avatarBase64.isEmpty()) {
-            return;
-        }
-
-        validateAvatarSize(avatarBase64);
-        String contentType = extractContentType(avatarBase64);
-        avatarEventService.publishAvatarUpdateEvent(userId, avatarBase64, contentType);
-    }
-
-    private void validateAvatarSize(String avatarBase64) {
-        String base64Data = avatarBase64;
-
-        // Extract base64 data if it contains data URI prefix
-        if (base64Data.startsWith("data:image/")) {
-            int commaIndex = base64Data.indexOf(',');
-            if (commaIndex != -1) {
-                base64Data = base64Data.substring(commaIndex + 1);
-            }
-        }
-
-        // Calculate size in bytes (base64 is ~33% larger than original)
-        int imageSizeBytes = (base64Data.length() * 3) / 4;
-        int maxFileSizeBytes = 2 * 1024 * 1024; // 2MB
-
-        if (imageSizeBytes > maxFileSizeBytes) {
-            throw new RuntimeException("Avatar image size exceeds 2MB limit");
-        }
-    }
-
-    private String extractContentType(String avatarBase64) {
-        if (avatarBase64.startsWith("data:image/")) {
-            String[] parts = avatarBase64.split(";");
-            if (parts.length > 0) {
-                return parts[0].replace("data:", "");
-            }
-        }
-        return "image/jpeg"; // Default content type
     }
 
     public void delete(String id) {

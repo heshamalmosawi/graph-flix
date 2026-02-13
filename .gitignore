@@ -32,6 +32,10 @@ build/
 ### VS Code ###
 .vscode/
 
+# Environment variables and credentials
+.env
+.env.local
+.env.*.local
 .neo4j-creds
 opencode.json
 

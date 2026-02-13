@@ -35,9 +35,6 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private AvatarEventService avatarEventService;
-
-    @Mock
     private JwtService jwtService;
 
     @InjectMocks
