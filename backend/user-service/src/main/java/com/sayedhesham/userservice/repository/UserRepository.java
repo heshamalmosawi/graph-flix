@@ -12,9 +12,5 @@ public interface UserRepository extends Neo4jRepository<User, String> {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByUsername(String username);
-
     boolean existsByEmail(String email);
-
-    boolean existsByUsername(String username);
 }

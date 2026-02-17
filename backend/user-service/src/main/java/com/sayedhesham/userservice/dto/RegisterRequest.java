@@ -3,8 +3,10 @@ package com.sayedhesham.userservice.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
+@Getter
 public class RegisterRequest {
 
     @NotBlank(message = "Name is required")
@@ -17,6 +19,4 @@ public class RegisterRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @NotBlank
-    private String role; // 'client' or 'sellers'
 }

@@ -9,13 +9,12 @@ import com.sayedhesham.userservice.dto.RegisterRequest;
 import com.sayedhesham.userservice.model.User;
 import com.sayedhesham.userservice.repository.UserRepository;
 import com.sayedhesham.userservice.service.security.JwtService;
+import com.sayedhesham.userservice.util.EmailValidator;
 
 @Service
 public class AuthService {
 
     private static final long TOKEN_EXPIRATION_MS = 1000L * 60 * 60 * 24 * 3; // 3 days in milliseconds
-    private static final String ROLE_SELLER = "seller";
-    private static final String ROLE_CLIENT = "client";
     private static final int MIN_PASSWORD_LENGTH = 6;
 
     private final UserRepository userRepo;
@@ -28,24 +27,17 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-    public boolean isEmailTaken(String email) {
-        return userRepo.findByEmail(email).isPresent();
-    }
-
     public void registerUser(RegisterRequest req) {
         validateRegistrationRequest(req);
         validateEmailNotTaken(req.getEmail());
-        validateRole(req.getRole());
 
         User user = User.builder()
                 .name(req.getName())
                 .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .role(req.getRole())
                 .build();
 
-        User savedUser = this.userRepo.save(user);
-
+        this.userRepo.save(user);
     }
 
     private void validateRegistrationRequest(RegisterRequest req) {
@@ -58,12 +50,7 @@ public class AuthService {
         if (req.getPassword() == null || req.getPassword().isEmpty()) {
             throw new RuntimeException("Password is required");
         }
-        if (req.getRole() == null || req.getRole().isEmpty()) {
-            throw new RuntimeException("Role is required");
-        }
-        if (!req.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$")) {
-            throw new RuntimeException("Invalid email format");
-        }
+        EmailValidator.validate(req.getEmail());
         if (req.getPassword().length() < MIN_PASSWORD_LENGTH) {
             throw new RuntimeException("Password must be at least 6 characters long");
         }
@@ -72,12 +59,6 @@ public class AuthService {
     private void validateEmailNotTaken(String email) {
         if (userRepo.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already in use");
-        }
-    }
-
-    private void validateRole(String role) {
-        if (role == null || (!role.equals(ROLE_CLIENT) && !role.equals(ROLE_SELLER))) {
-            throw new RuntimeException("Invalid role. Must be 'client' or 'sellers'");
         }
     }
 

@@ -49,26 +49,7 @@ class AuthServiceTest {
         .name("John Doe")
         .email("john@example.com")
         .password("encodedPassword")
-        .role("client")
         .build();
-    }
-
-    @Test
-    void isEmailTaken_WhenEmailExists_ShouldReturnTrue() {
-        when(userRepo.findByEmail("john@example.com")).thenReturn(Optional.of(testUser));
-
-        boolean result = authService.isEmailTaken("john@example.com");
-
-        assertTrue(result);
-    }
-
-    @Test
-    void isEmailTaken_WhenEmailNotExists_ShouldReturnFalse() {
-        when(userRepo.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
-
-        boolean result = authService.isEmailTaken("nonexistent@example.com");
-
-        assertFalse(result);
     }
 
     @Test
@@ -77,7 +58,6 @@ class AuthServiceTest {
         request.setName("Jane Doe");
         request.setEmail("jane@example.com");
         request.setPassword("password123");
-        request.setRole("client");
 
         when(userRepo.findByEmail("jane@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
@@ -93,7 +73,6 @@ class AuthServiceTest {
         request.setName("John Doe");
         request.setEmail("john@example.com");
         request.setPassword("password123");
-        request.setRole("client");
 
         when(userRepo.findByEmail("john@example.com")).thenReturn(Optional.of(testUser));
 
@@ -107,7 +86,6 @@ class AuthServiceTest {
         request.setName("John Doe");
         request.setEmail("invalid-email");
         request.setPassword("password123");
-        request.setRole("client");
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
         assertNotNull(exception.getMessage());
@@ -119,7 +97,6 @@ class AuthServiceTest {
         request.setName("John Doe");
         request.setEmail("john@example.com");
         request.setPassword("123");
-        request.setRole("client");
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
         assertNotNull(exception.getMessage());
