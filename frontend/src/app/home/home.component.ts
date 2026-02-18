@@ -20,7 +20,7 @@ import { RouterLink } from '@angular/router';
     }
     h1 {
       font-size: 2.5rem;
-      color: var(--primary-color);
+      color: var(--color-primary);
       margin-bottom: 1rem;
     }
   `]
