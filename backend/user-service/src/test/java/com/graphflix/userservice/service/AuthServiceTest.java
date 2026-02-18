@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.service;
+package com.graphflix.userservice.service;
 
 import java.util.Optional;
 
@@ -18,12 +18,12 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.sayedhesham.userservice.dto.LoginRequest;
-import com.sayedhesham.userservice.dto.LoginResponse;
-import com.sayedhesham.userservice.dto.RegisterRequest;
-import com.sayedhesham.userservice.model.User;
-import com.sayedhesham.userservice.repository.UserRepository;
-import com.sayedhesham.userservice.service.security.JwtService;
+import com.graphflix.userservice.dto.LoginRequest;
+import com.graphflix.userservice.dto.LoginResponse;
+import com.graphflix.userservice.dto.RegisterRequest;
+import com.graphflix.userservice.model.User;
+import com.graphflix.userservice.repository.UserRepository;
+import com.graphflix.userservice.service.security.JwtService;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {

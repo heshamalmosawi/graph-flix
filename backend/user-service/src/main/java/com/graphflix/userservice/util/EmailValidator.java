@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.util;
+package com.graphflix.userservice.util;
 
 import java.util.regex.Pattern;
 

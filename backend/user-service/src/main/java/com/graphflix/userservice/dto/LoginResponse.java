@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.dto;
+package com.graphflix.userservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

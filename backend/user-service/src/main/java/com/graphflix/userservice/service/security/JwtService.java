@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.service.security;
+package com.graphflix.userservice.service.security;
 
 import java.security.Key;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.sayedhesham.userservice.model.User;
+import com.graphflix.userservice.model.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

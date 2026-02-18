@@ -8,7 +8,7 @@
         <version>3.5.7</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.sayedhesham</groupId>
+    <groupId>com.graphflix</groupId>
     <artifactId>userservice</artifactId>
     <version>1.0.0</version>
     <name>userservice</name>

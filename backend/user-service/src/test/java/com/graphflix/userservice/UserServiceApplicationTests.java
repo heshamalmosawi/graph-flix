@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice;
+package com.graphflix.userservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

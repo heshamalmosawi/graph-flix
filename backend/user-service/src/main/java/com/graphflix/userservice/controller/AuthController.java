@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.controller;
+package com.graphflix.userservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sayedhesham.userservice.dto.LoginRequest;
-import com.sayedhesham.userservice.dto.LoginResponse;
-import com.sayedhesham.userservice.dto.RegisterRequest;
-import com.sayedhesham.userservice.service.AuthService;
+import com.graphflix.userservice.dto.LoginRequest;
+import com.graphflix.userservice.dto.LoginResponse;
+import com.graphflix.userservice.dto.RegisterRequest;
+import com.graphflix.userservice.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")

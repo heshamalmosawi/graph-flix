@@ -1,15 +1,15 @@
-package com.sayedhesham.userservice.service;
+package com.graphflix.userservice.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.sayedhesham.userservice.dto.LoginRequest;
-import com.sayedhesham.userservice.dto.LoginResponse;
-import com.sayedhesham.userservice.dto.RegisterRequest;
-import com.sayedhesham.userservice.model.User;
-import com.sayedhesham.userservice.repository.UserRepository;
-import com.sayedhesham.userservice.service.security.JwtService;
-import com.sayedhesham.userservice.util.EmailValidator;
+import com.graphflix.userservice.dto.LoginRequest;
+import com.graphflix.userservice.dto.LoginResponse;
+import com.graphflix.userservice.dto.RegisterRequest;
+import com.graphflix.userservice.model.User;
+import com.graphflix.userservice.repository.UserRepository;
+import com.graphflix.userservice.service.security.JwtService;
+import com.graphflix.userservice.util.EmailValidator;
 
 @Service
 public class AuthService {

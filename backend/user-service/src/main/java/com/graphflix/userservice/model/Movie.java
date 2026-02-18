@@ -1,4 +1,4 @@
-package com.sayedhesham.userservice.model;
+package com.graphflix.userservice.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
