@@ -1,0 +1,248 @@
+# Neo4j Dataset Specification
+
+## Overview
+This document describes the Neo4j graph database schema for the movie recommendation system.
+
+## Constraints
+
+```cypher
+CREATE CONSTRAINT movie_title IF NOT EXISTS FOR (m:Movie) REQUIRE m.title IS UNIQUE;
+CREATE CONSTRAINT person_name IF NOT EXISTS FOR (p:Person) REQUIRE p.name IS UNIQUE;
+```
+
+---
+
+## Node Labels
+
+### Movie
+Represents a movie entity in the system.
+
+**Properties:**
+| Property | Type   | Description                         | Required | Unique |
+|----------|--------|-------------------------------------|-----------|---------|
+| title    | String | The title of the movie             | Yes       | Yes     |
+| released | Integer| Year the movie was released          | No        | No      |
+| tagline  | String | Short promotional tagline/description   | No        | No      |
+
+**Examples:**
+```cypher
+(:Movie {title: 'The Matrix', released: 1999, tagline: 'Welcome to the Real World'})
+(:Movie {title: 'Top Gun', released: 1986, tagline: 'I feel the need, the need for speed.'})
+```
+
+---
+
+### Person
+Represents a person (actor, director, writer, producer) in the movie system.
+
+**Properties:**
+| Property | Type   | Description               | Required | Unique |
+|----------|--------|---------------------------|-----------|---------|
+| name     | String | Full name of the person  | Yes       | Yes     |
+| born     | Integer| Year of birth            | No        | No      |
+
+**Examples:**
+```cypher
+(:Person {name: 'Keanu Reeves', born: 1964})
+(:Person {name: 'Tom Hanks', born: 1956})
+```
+
+---
+
+## Relationship Types
+
+### ACTED_IN
+Relationship from a **Person** to a **Movie** indicating the person acted in the movie.
+
+**Direction:** `(:Person)-[:ACTED_IN]->(:Movie)`
+
+**Properties:**
+| Property | Type          | Description                     | Required |
+|----------|---------------|---------------------------------|-----------|
+| roles    | Array[String] | List of character names played  | No        |
+
+**Examples:**
+```cypher
+(:Person {name: 'Keanu Reeves'})-[:ACTED_IN {roles: ['Neo']}]->(:Movie {title: 'The Matrix'})
+(:Person {name: 'Tom Hanks'})-[:ACTED_IN {roles: ['Jim Lovell']}]->(:Movie {title: 'Apollo 13'})
+```
+
+---
+
+### DIRECTED
+Relationship from a **Person** to a **Movie** indicating the person directed the movie.
+
+**Direction:** `(:Person)-[:DIRECTED]->(:Movie)`
+
+**Properties:** None
+
+**Examples:**
+```cypher
+(:Person {name: 'Lana Wachowski'})-[:DIRECTED]->(:Movie {title: 'The Matrix'})
+(:Person {name: 'Ron Howard'})-[:DIRECTED]->(:Movie {title: 'Apollo 13'})
+```
+
+---
+
+### PRODUCED
+Relationship from a **Person** to a **Movie** indicating the person produced the movie.
+
+**Direction:** `(:Person)-[:PRODUCED]->(:Movie)`
+
+**Properties:** None
+
+**Examples:**
+```cypher
+(:Person {name: 'Joel Silver'})-[:PRODUCED]->(:Movie {title: 'The Matrix'})
+(:Person {name: 'Cameron Crowe'})-[:PRODUCED]->(:Movie {title: 'Jerry Maguire'})
+```
+
+---
+
+### WROTE
+Relationship from a **Person** to a **Movie** indicating the person wrote the movie.
+
+**Direction:** `(:Person)-[:WROTE]->(:Movie)`
+
+**Properties:** None
+
+**Examples:**
+```cypher
+(:Person {name: 'Aaron Sorkin'})-[:WROTE]->(:Movie {title: 'A Few Good Men'})
+(:Person {name: 'Nora Ephron'})-[:WROTE]->(:Movie {title: 'When Harry Met Sally'})
+```
+
+---
+
+### FOLLOWS
+Relationship from a **Person** to another **Person** indicating social following/connection.
+
+**Direction:** `(:Person)-[:FOLLOWS]->(:Person)`
+
+**Properties:** None
+
+**Examples:**
+```cypher
+(:Person {name: 'James Thompson'})-[:FOLLOWS]->(:Person {name: 'Jessica Thompson'})
+(:Person {name: 'Paul Blythe'})-[:FOLLOWS]->(:Person {name: 'Angela Scope'})
+```
+
+---
+
+### REVIEWED
+Relationship from a **Person** to a **Movie** indicating the person reviewed the movie.
+
+**Direction:** `(:Person)-[:REVIEWED]->(:Movie)`
+
+**Properties:**
+| Property | Type   | Description            | Required |
+|----------|--------|------------------------|-----------|
+| summary  | String | Review text summary   | No        |
+| rating   | Integer| Rating score (0-100) | No     |
+
+**Examples:**
+```cypher
+(:Person {name: 'Jessica Thompson'})-[:REVIEWED {summary: 'An amazing journey', rating: 95}]->(:Movie {title: 'Cloud Atlas'})
+(:Person {name: 'James Thompson'})-[:REVIEWED {summary: 'The coolest football movie ever', rating: 100}]->(:Movie {title: 'The Replacements'})
+```
+
+---
+
+## Common Query Patterns
+
+### Get all movies
+```cypher
+MATCH (m:Movie)
+RETURN m
+ORDER BY m.released DESC
+```
+
+### Get movie by title
+```cypher
+MATCH (m:Movie {title: 'The Matrix'})
+RETURN m
+```
+
+### Get actors in a movie
+```cypher
+MATCH (p:Person)-[:ACTED_IN]->(m:Movie {title: 'The Matrix'})
+RETURN p.name, p.born
+```
+
+### Get movies directed by a person
+```cypher
+MATCH (p:Person {name: 'Ron Howard'})-[:DIRECTED]->(m:Movie)
+RETURN m.title, m.released, m.tagline
+```
+
+### Get all roles a person played
+```cypher
+MATCH (p:Person {name: 'Tom Hanks'})-[r:ACTED_IN]->(m:Movie)
+RETURN m.title, r.roles
+```
+
+### Get movies reviewed by a person with rating
+```cypher
+MATCH (p:Person)-[r:REVIEWED]->(m:Movie)
+WHERE p.name = 'Jessica Thompson'
+RETURN m.title, r.summary, r.rating
+ORDER BY r.rating DESC
+```
+
+### Get all movies a person worked on (actor, director, producer, writer)
+```cypher
+MATCH (p:Person)-[r]->(m:Movie)
+WHERE p.name = 'Tom Hanks'
+RETURN DISTINCT m.title, type(r) as role
+```
+
+### Get co-actors (people who acted together)
+```cypher
+MATCH (p1:Person)-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(p2:Person)
+WHERE p1.name = 'Keanu Reeves' AND p2.name <> 'Keanu Reeves'
+RETURN DISTINCT p2.name
+```
+
+### Get social graph of who follows whom
+```cypher
+MATCH (p1:Person)-[:FOLLOWS]->(p2:Person)
+RETURN p1.name as follower, p2.name as following
+```
+
+---
+
+## Sample Data Summary
+
+| Count | Entity   |
+|-------|----------|
+| ~38   | Movies   |
+| ~50   | People   |
+| ~140  | ACTED_IN relationships |
+| ~35   | DIRECTED relationships |
+| ~10   | PRODUCED relationships |
+| ~10   | WROTE relationships |
+| ~3    | FOLLOWS relationships |
+| ~8    | REVIEWED relationships |
+
+---
+
+## Microservice Mapping
+
+| Microservice       | Responsible For                      |
+|-------------------|-------------------------------------|
+| movieservice     | Reading/writing Movie nodes, movie search, filtering |
+| userservice      | User authentication, User nodes (if added) |
+| ratingservice    | Rating nodes, REVIEWED relationships |
+| recommendationservice | Generating recommendations based on user's ratings and movie connections |
+
+---
+
+## Notes
+
+- **Person nodes** can have multiple roles: actor, director, producer, writer
+- A single **Movie** can have multiple ACTED_IN relationships (multiple actors)
+- A single **Person** can ACT_IN multiple movies
+- **Rating scores** range from 0-100 based on the sample data
+- **Released years** in the dataset range from 1975 to 2012
+- The dataset does not include **User** nodes for application authentication (handled separately in userservice)
+- The dataset is focused on movies and people, not users who rate movies (REVIEWED relationships are from Person nodes, which appear to be sample reviewers)

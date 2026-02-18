@@ -22,35 +22,15 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures the security filter chain for the application.
-     *
-     * This method sets up the HTTP security configuration using Spring
-     * Security. It disables CSRF protection and defines authorization rules for
-     * incoming HTTP requests:
-     *
-     * - Allows all GET requests to the "/products" endpoint without
-     * authentication. - Requires authentication for all other requests to
-     * endpoints under "/products/**". - Permits all other requests to any other
-     * endpoints without authentication.
-     *
-     * @param http the {@link HttpSecurity} object used to configure security
-     * settings.
-     * @param jwtAuthFilter the JWT authentication filter to be added to the filter chain.
-     * @return the configured {@link SecurityFilterChain} instance.
-     * @throws Exception if an error occurs during the configuration process.
-     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
-        System.out.println("Configuring security filter chain...");
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorizeHttpRequestsCustomizer -> authorizeHttpRequestsCustomizer
-                // .requestMatchers("/auth/register", "/auth/login", "/greeting").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/greeting").permitAll()
-                .anyRequest().authenticated()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/greeting").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(sesh -> sesh.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(sesh -> sesh.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
