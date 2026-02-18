@@ -11,6 +11,4 @@ import com.sayedhesham.userservice.model.User;
 public interface UserRepository extends Neo4jRepository<User, String> {
 
     Optional<User> findByEmail(String email);
-
-    boolean existsByEmail(String email);
 }
