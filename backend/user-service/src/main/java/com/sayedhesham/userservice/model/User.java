@@ -1,14 +1,17 @@
 package com.sayedhesham.userservice.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
+
+import org.springframework.data.neo4j.core.schema.Id;
+import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Property;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "users")
+@Node
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,9 +20,17 @@ public class User {
 
     @Id
     private String id;
+
+    @Property("name")
     private String name;
+
+    @Property("email")
     private String email;
+
+    @Property("password")
     private String password;
-    private String role;
-    private String avatarMediaId; // Reference to Media collection
+
+    @Property("createdAt")
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

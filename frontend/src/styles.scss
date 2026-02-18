@@ -1,1 +1,97 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Brand Colors */
+  --color-primary: #6366f1; /* Indigo 500 */
+  --color-primary-hover: #4f46e5; /* Indigo 600 */
+  --color-secondary: #8b5cf6; /* Violet 500 */
+  
+  /* Neutral / Theme Colors (Dark Default) */
+  --bg-color: #0f172a; /* Slate 900 */
+  --surface-color: #1e293b; /* Slate 800 */
+  --surface-hover: #334155; /* Slate 700 */
+  --border-color: #334155; /* Slate 700 */
+  
+  --text-primary: #f8fafc; /* Slate 50 */
+  --text-secondary: #94a3b8; /* Slate 400 */
+  --text-tertiary: #64748b; /* Slate 500 */
+  
+  /* Functional Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Spacing */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Roboto', sans-serif; /* Prefer Inter for modern look if available */
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  margin-top: 0;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Angular Material Snackbar Overrides */
+.mat-mdc-snack-bar-container {
+  &.toast-success {
+    .mat-mdc-snackbar-surface {
+      background-color: var(--color-success);
+      color: #fff;
+    }
+    button {
+      color: #fff !important;
+    }
+  }
+  
+  &.toast-error {
+    .mat-mdc-snackbar-surface {
+      background-color: var(--color-error);
+      color: #fff;
+    }
+    button {
+      color: #fff !important;
+    }
+  }
+  
+  &.toast-info {
+    .mat-mdc-snackbar-surface {
+      background-color: var(--color-info);
+      color: #fff;
+    }
+    button {
+      color: #fff !important;
+    }
+  }
+  
+  &.toast-warning {
+    .mat-mdc-snackbar-surface {
+      background-color: var(--color-warning);
+      color: #fff;
+    }
+    button {
+      color: #fff !important;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+main {
+  min-height: calc(100vh - 80px); /* header height is 80px */
+  background-color: var(--bg-color); /* Ensure full page background */
+  color: var(--text-primary);
+  /* Optional: subtle grid pattern for 'tech' feel */
+  background-image: 
+    linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+  background-size: 50px 50px;
+  background-blend-mode: overlay;
+  opacity: 0.98; /* slight opacity for grid */
+}

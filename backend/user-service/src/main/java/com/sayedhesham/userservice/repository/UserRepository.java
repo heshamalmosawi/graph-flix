@@ -2,10 +2,15 @@ package com.sayedhesham.userservice.repository;
 
 import java.util.Optional;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.stereotype.Repository;
 
 import com.sayedhesham.userservice.model.User;
 
-public interface UserRepository extends MongoRepository<User, String> {
+@Repository
+public interface UserRepository extends Neo4jRepository<User, String> {
+
     Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }

@@ -18,6 +18,6 @@ public class LoginResponse {
     private String token;
 
     @NotNull
-    private Long expiresAt; // unix timestamp
+    private Long expiresAt;
 
 }
