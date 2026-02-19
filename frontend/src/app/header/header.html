@@ -3,6 +3,8 @@
     <span class="logo-icon">Graph</span>Flix
   </div>
   <nav class="nav">
+    <a class="nav-link" routerLink="/movies">Browse Movies</a>
+    <a class="nav-link" routerLink="/movies/search">Search</a>
     <button class="login-btn" *ngIf="(isLoggedIn$ | async) === false" routerLink="/auth">Login</button>
     <button class="login-btn" *ngIf="(isLoggedIn$ | async) === true" (click)="logout()">Logout</button>
   </nav>

@@ -1,0 +1,49 @@
+<div class="movie-search-page">
+  <h1>Search Movies</h1>
+
+  <app-search-bar (search)="onSearch($event)"></app-search-bar>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Searching...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && movies.length === 0" class="no-results">
+    <p>No movies found matching your criteria.</p>
+  </div>
+
+  <div *ngIf="!loading && !error && movies.length > 0" class="results-info">
+    <p class="results-count">{{ pagedResponse?.totalElements || 0 }} results found</p>
+  </div>
+
+  <div *ngIf="!loading && !error" class="movies-grid">
+    <app-movie-card
+      *ngFor="let movie of movies"
+      [movie]="movie">
+    </app-movie-card>
+  </div>
+
+  <div *ngIf="!loading && !error && totalPages > 1" class="pagination">
+    <button
+      class="btn-pagination"
+      [disabled]="currentPage === 0"
+      (click)="onPageChange(currentPage - 1)">
+      ← Previous
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage + 1 }} of {{ totalPages }}
+    </span>
+
+    <button
+      class="btn-pagination"
+      [disabled]="currentPage >= totalPages - 1"
+      (click)="onPageChange(currentPage + 1)">
+      Next →
+    </button>
+  </div>
+</div>

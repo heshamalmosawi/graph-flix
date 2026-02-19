@@ -41,6 +41,20 @@
 .nav {
   display: flex;
   align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-primary);
+  }
 }
 
 .login-btn {

@@ -1,0 +1,28 @@
+<div class="search-bar-container">
+  <div class="search-input-wrapper">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by movie title or person name..."
+      [(ngModel)]="searchRequest.title"
+      (ngModelChange)="onSearchChange()"
+    />
+    <button class="btn-search" (click)="onSearch()">🔍</button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="person-select">Search by Person (Actor/Director)</label>
+      <input
+        type="text"
+        id="person-select"
+        class="filter-input"
+        placeholder="Enter person name..."
+        [(ngModel)]="searchRequest.person"
+        (ngModelChange)="onSearchChange()"
+      />
+    </div>
+
+    <button class="btn-clear" (click)="onClear()">Clear Filters</button>
+  </div>
+</div>

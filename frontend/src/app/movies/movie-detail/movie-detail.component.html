@@ -1,0 +1,56 @@
+<div class="movie-detail-container">
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading movie details...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="goBack()">Back to Movies</button>
+  </div>
+
+  <div *ngIf="!loading && !error && movie" class="movie-content">
+    <button class="btn-back" (click)="goBack()">← Back to Movies</button>
+
+    <div class="movie-header">
+      <div class="movie-info-large">
+        <h1 class="title">{{ movie.title }}</h1>
+        <div class="meta-row">
+          <span class="year" *ngIf="movie.released">{{ movie.released }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="description-section" *ngIf="movie.tagline">
+      <h2>Description</h2>
+      <p>{{ movie.tagline || 'No description available.' }}</p>
+    </div>
+
+    <div *ngIf="getActorNames().length > 0" class="cast-section">
+      <h2>Cast</h2>
+      <div class="cast-list">
+        <span *ngFor="let actor of getActorNames()" class="cast-item">
+          {{ actor }}
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="getDirectorNames().length > 0" class="director-section">
+      <h2>Directors</h2>
+      <div class="director-list">
+        <span *ngFor="let director of getDirectorNames()" class="director-item">
+          {{ director }}
+        </span>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <button class="btn-rate" (click)="rateMovie()">
+        ⭐ Rate this Movie
+      </button>
+      <button class="btn-watchlist" (click)="addToWatchlist()">
+        + Add to Watchlist
+      </button>
+    </div>
+  </div>
+</div>
