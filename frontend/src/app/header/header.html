@@ -5,7 +5,11 @@
   <nav class="nav">
     <a class="nav-link" routerLink="/movies">Browse Movies</a>
     <a class="nav-link" routerLink="/movies/search">Search</a>
-    <button class="login-btn" *ngIf="(isLoggedIn$ | async) === false" routerLink="/auth">Login</button>
-    <button class="login-btn" *ngIf="(isLoggedIn$ | async) === true" (click)="logout()">Logout</button>
+    @if ((isLoggedIn$ | async) === false) {
+    <button class="login-btn" routerLink="/auth">Login</button>
+    }
+    @if ((isLoggedIn$ | async) === true) {
+    <button class="login-btn" (click)="logout()">Logout</button>
+    }
   </nav>
 </header>

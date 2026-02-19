@@ -2,17 +2,23 @@
   <div class="auth-card">
     <h2>{{ isLoginMode ? 'Login' : 'Register' }}</h2>
     <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
-      <div class="form-group" *ngIf="!isLoginMode">
+      @if (!isLoginMode) {
+      <div class="form-group">
         <label for="name">Name</label>
         <input 
           type="text" 
           id="name" 
           formControlName="name" 
           placeholder="Your Name">
-        <div *ngIf="authForm.get('name')?.touched && authForm.get('name')?.invalid" class="validation-error">
-          <small *ngIf="authForm.get('name')?.errors?.['required']">Name is required</small>
+        @if (authForm.get('name')?.touched && authForm.get('name')?.invalid) {
+        <div class="validation-error">
+          @if (authForm.get('name')?.errors?.['required']) {
+          <small>Name is required</small>
+          }
         </div>
+        }
       </div>
+      }
       
       <div class="form-group">
         <label for="email">Email</label>
@@ -21,10 +27,16 @@
           id="email" 
           formControlName="email" 
           placeholder="your.email@example.com">
-        <div *ngIf="authForm.get('email')?.touched && authForm.get('email')?.invalid" class="validation-error">
-            <small *ngIf="authForm.get('email')?.errors?.['required']">Email is required</small>
-            <small *ngIf="authForm.get('email')?.errors?.['email']">Enter a valid email</small>
+        @if (authForm.get('email')?.touched && authForm.get('email')?.invalid) {
+        <div class="validation-error">
+            @if (authForm.get('email')?.errors?.['required']) {
+            <small>Email is required</small>
+            }
+            @if (authForm.get('email')?.errors?.['email']) {
+            <small>Enter a valid email</small>
+            }
         </div>
+        }
       </div>
 
       <div class="form-group">
@@ -34,14 +46,20 @@
           id="password" 
           formControlName="password" 
           placeholder="Password">
-        <div *ngIf="authForm.get('password')?.touched && authForm.get('password')?.invalid" class="validation-error">
-            <small *ngIf="authForm.get('password')?.errors?.['required']">Password is required</small>
-            <small *ngIf="authForm.get('password')?.errors?.['minlength']">Password must be at least 6 characters</small>
+        @if (authForm.get('password')?.touched && authForm.get('password')?.invalid) {
+        <div class="validation-error">
+            @if (authForm.get('password')?.errors?.['required']) {
+            <small>Password is required</small>
+            }
+            @if (authForm.get('password')?.errors?.['minlength']) {
+            <small>Password must be at least 6 characters</small>
+            }
         </div>
+        }
       </div>
 
       <button type="submit" [disabled]="!authForm.valid || isLoading" class="btn-primary">
-        {{ isLoginMode ? 'Login' : 'Register' }} <span *ngIf="isLoading">...</span>
+        {{ isLoginMode ? 'Login' : 'Register' }} @if (isLoading) { <span>...</span> }
       </button>
     </form>
 

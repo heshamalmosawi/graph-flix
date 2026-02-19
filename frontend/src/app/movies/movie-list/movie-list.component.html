@@ -1,31 +1,42 @@
 <div class="movie-list-container">
-  <div *ngIf="loading" class="loading">
+  @if (loading) {
+  <div class="loading">
     <div class="spinner"></div>
     <p>Loading movies...</p>
   </div>
+  }
 
-  <div *ngIf="error" class="error">
+  @if (error) {
+  <div class="error">
     <p>{{ error }}</p>
     <button class="btn-primary" (click)="loadMovies()">Retry</button>
   </div>
+  }
 
-  <div *ngIf="!loading && !error" class="movies-header">
+  @if (!loading && !error) {
+  <div class="movies-header">
     <h1>Popular Movies</h1>
     <p class="subtitle">{{ pagedResponse?.totalElements || 0 }} movies found</p>
   </div>
+  }
 
-  <div *ngIf="!loading && !error && movies.length === 0" class="empty">
+  @if (!loading && !error && movies.length === 0) {
+  <div class="empty">
     <p>No movies found</p>
   </div>
+  }
 
-  <div *ngIf="!loading && !error" class="movies-grid">
+  @if (!loading && !error) {
+  <div class="movies-grid">
     <app-movie-card
       *ngFor="let movie of movies"
       [movie]="movie">
     </app-movie-card>
   </div>
+  }
 
-  <div *ngIf="!loading && !error && totalPages > 1" class="pagination">
+  @if (!loading && !error && totalPages > 1) {
+  <div class="pagination">
     <button
       class="btn-pagination"
       [disabled]="currentPage === 0"
@@ -44,4 +55,5 @@
       Next →
     </button>
   </div>
+  }
 </div>

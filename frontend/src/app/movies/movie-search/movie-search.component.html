@@ -3,31 +3,42 @@
 
   <app-search-bar (search)="onSearch($event)"></app-search-bar>
 
-  <div *ngIf="loading" class="loading">
+  @if (loading) {
+  <div class="loading">
     <div class="spinner"></div>
     <p>Searching...</p>
   </div>
+  }
 
-  <div *ngIf="error" class="error">
+  @if (error) {
+  <div class="error">
     <p>{{ error }}</p>
   </div>
+  }
 
-  <div *ngIf="!loading && !error && movies.length === 0" class="no-results">
+  @if (!loading && !error && movies.length === 0) {
+  <div class="no-results">
     <p>No movies found matching your criteria.</p>
   </div>
+  }
 
-  <div *ngIf="!loading && !error && movies.length > 0" class="results-info">
+  @if (!loading && !error && movies.length > 0) {
+  <div class="results-info">
     <p class="results-count">{{ pagedResponse?.totalElements || 0 }} results found</p>
   </div>
+  }
 
-  <div *ngIf="!loading && !error" class="movies-grid">
+  @if (!loading && !error) {
+  <div class="movies-grid">
     <app-movie-card
       *ngFor="let movie of movies"
       [movie]="movie">
     </app-movie-card>
   </div>
+  }
 
-  <div *ngIf="!loading && !error && totalPages > 1" class="pagination">
+  @if (!loading && !error && totalPages > 1) {
+  <div class="pagination">
     <button
       class="btn-pagination"
       [disabled]="currentPage === 0"
@@ -46,4 +57,5 @@
       Next →
     </button>
   </div>
+  }
 </div>
