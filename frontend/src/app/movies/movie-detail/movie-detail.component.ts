@@ -95,26 +95,18 @@ export class MovieDetailComponent implements OnInit {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user.uuid || user.id || user.name || user.email;
-    
-    console.log('MovieDetailComponent: loadUserRating - Using userId:', userId);
-
-    if (!userId) return;
-
     this.userRatingLoading = true;
-    this.ratingService.getUserRatings(userId, 0, 100).subscribe({
-      next: (response) => {
-        const movieRating = response.content.find(r => r.movieId === movieId);
-        if (movieRating) {
-          this.userExistingRating = movieRating;
-        } else {
-          this.userExistingRating = null;
-        }
+    this.ratingService.getMyRatingForMovie(movieId).subscribe({
+      next: (rating) => {
+        this.userExistingRating = rating;
         this.userRatingLoading = false;
       },
       error: (err) => {
-        console.error('Error loading user rating:', err);
+        if (err.status === 404) {
+          this.userExistingRating = null;
+        } else {
+          console.error('Error loading user rating:', err);
+        }
         this.userRatingLoading = false;
       }
     });

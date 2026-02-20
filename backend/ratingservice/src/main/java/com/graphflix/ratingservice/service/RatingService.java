@@ -59,7 +59,7 @@ public class RatingService {
         log.info("[RatingService] User found — id: '{}', name: '{}', email: '{}'", user.getId(), user.getName(), user.getEmail());
         log.info("[RatingService] Movie found — id: '{}', title: '{}'", movie.getId(), movie.getTitle());
 
-        var existing = ratingRepository.findByUserIdAndMovieId(user.getId(), movieId);
+        var existing = ratingRepository.findByUserIdAndMovieId(user.getEmail(), movieId);
 
         if (existing.isPresent()) {
             Rating existingRating = existing.get();
@@ -78,7 +78,7 @@ public class RatingService {
                 .rating(rating)
                 .comment(comment)
                 .timestamp(LocalDateTime.now())
-                .userId(user.getId())
+                .userId(user.getEmail())
                 .userName(user.getName())
                 .movieId(movie.getId())
                 .movieTitle(movie.getTitle())
@@ -106,6 +106,12 @@ public class RatingService {
     public Page<RatingDTO> getMovieRatings(String movieId, Pageable pageable) {
         Page<Rating> ratings = ratingRepository.findByMovieId(movieId, pageable);
         return ratings.map(this::toDTO);
+    }
+
+    public RatingDTO getUserRatingForMovie(String email, String movieId) {
+        return ratingRepository.findByUserIdAndMovieId(email, movieId)
+                .map(this::toDTO)
+                .orElse(null);
     }
 
     public AverageRatingDTO getAverageRating(String movieId) {

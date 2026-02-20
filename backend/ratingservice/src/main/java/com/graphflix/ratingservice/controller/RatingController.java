@@ -87,6 +87,24 @@ public class RatingController {
         return ResponseEntity.ok(ratings);
     }
 
+    @GetMapping("/my-rating/{movieId}")
+    public ResponseEntity<RatingDTO> getMyRatingForMovie(
+            @PathVariable String movieId) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String userId = auth.getName();
+        log.info("[RatingController] GET /my-rating/{} — userId: '{}'", movieId, userId);
+        RatingDTO rating = ratingService.getUserRatingForMovie(userId, movieId);
+        if (rating == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(rating);
+    }
+
     @GetMapping("/movie/{movieId}")
     public ResponseEntity<Page<RatingDTO>> getMovieRatings(
             @PathVariable String movieId,

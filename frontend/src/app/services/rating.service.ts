@@ -53,4 +53,8 @@ export class RatingService {
       `${this.API_URL}/movie/${movieId}/average`
     );
   }
+
+  getMyRatingForMovie(movieId: string): Observable<Rating | null> {
+    return this.http.get<Rating | null>(`${this.API_URL}/my-rating/${movieId}`);
+  }
 }
