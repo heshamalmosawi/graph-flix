@@ -51,6 +51,24 @@
   font-weight: 500;
   transition: color 0.2s ease;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &.watchlist-link {
+    position: relative;
+
+    .count-badge {
+      background: var(--color-primary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      min-width: 20px;
+      text-align: center;
+    }
+  }
 
   &:hover {
     color: var(--color-primary);
