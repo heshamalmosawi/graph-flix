@@ -112,7 +112,7 @@ export class MovieDetailComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/movies']);
+    this.router.navigate(['/']);
   }
 
   rateMovie() {

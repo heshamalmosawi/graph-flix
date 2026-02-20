@@ -1,4 +1,59 @@
-<div class="home-container">
-  <h1>Welcome to GraphFlix</h1>
-  <p>Your movie recommendation engine.</p>
+<div class="movie-list-container">
+  @if (loading) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Loading movies...</p>
+  </div>
+  }
+
+  @if (error) {
+  <div class="error">
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadMovies()">Retry</button>
+  </div>
+  }
+
+  @if (!loading && !error) {
+  <div class="movies-header">
+    <h1>Popular Movies</h1>
+    <p class="subtitle">{{ pagedResponse?.totalElements || 0 }} movies found</p>
+  </div>
+  }
+
+  @if (!loading && !error && movies.length === 0) {
+  <div class="empty">
+    <p>No movies found</p>
+  </div>
+  }
+
+  @if (!loading && !error) {
+  <div class="movies-grid">
+    <app-movie-card
+      *ngFor="let movie of movies"
+      [movie]="movie">
+    </app-movie-card>
+  </div>
+  }
+
+  @if (!loading && !error && totalPages > 1) {
+  <div class="pagination">
+    <button
+      class="btn-pagination"
+      [disabled]="currentPage === 0"
+      (click)="onPageChange(currentPage - 1)">
+      ← Previous
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage + 1 }} of {{ totalPages }}
+    </span>
+
+    <button
+      class="btn-pagination"
+      [disabled]="currentPage >= totalPages - 1"
+      (click)="onPageChange(currentPage + 1)">
+      Next →
+    </button>
+  </div>
+  }
 </div>

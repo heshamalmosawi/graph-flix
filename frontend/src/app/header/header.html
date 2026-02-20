@@ -3,7 +3,6 @@
     <span class="logo-icon">Graph</span>Flix
   </div>
   <nav class="nav">
-    <a class="nav-link" routerLink="/movies">Browse Movies</a>
     <a class="nav-link" routerLink="/movies/search">Search</a>
     @if ((isLoggedIn$ | async) === false) {
     <button class="login-btn" routerLink="/auth">Login</button>
