@@ -72,11 +72,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     email, id, claims.keySet());
             log.info("[JWT Filter] Full claims map: {}", claims);
 
-            // Use email as principal if id is absent (tokens from user-service may not have 'id')
-            String principal = id != null ? id : email;
+            // Always use email as principal for consistency across all services
+            String principal = email;
 
             if (principal == null) {
-                log.error("[JWT Filter] Both 'id' and 'sub' (email) are null — cannot authenticate. Skipping auth setup.");
+                log.error("[JWT Filter] Email (sub claim) is null — cannot authenticate. Skipping auth setup.");
             } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
                 log.info("[JWT Filter] SecurityContext already has authentication: {}",
                         SecurityContextHolder.getContext().getAuthentication());
