@@ -6,7 +6,6 @@ import { environment } from '../../environments/environment';
 import {
   Rating,
   CreateRatingRequest,
-  UpdateRatingRequest,
   AverageRatingDTO,
   PagedRatingResponse
 } from '../models/rating.model';
@@ -21,10 +20,6 @@ export class RatingService {
 
   createRating(request: CreateRatingRequest): Observable<Rating> {
     return this.http.post<Rating>(this.API_URL, request);
-  }
-
-  updateRating(id: number, request: UpdateRatingRequest): Observable<Rating> {
-    return this.http.put<Rating>(`${this.API_URL}/${id}`, request);
   }
 
   deleteRating(id: number): Observable<void> {

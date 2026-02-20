@@ -41,8 +41,8 @@ public class RatingService {
     }
 
     @Transactional
-    public Rating createRating(String userId, String movieId, Integer rating, String comment) {
-        log.info("[RatingService] createRating called — userId/email: '{}', movieId: '{}', rating: {}", userId, movieId, rating);
+    public Rating upsertRating(String userId, String movieId, Integer rating, String comment) {
+        log.info("[RatingService] upsertRating called — userId/email: '{}', movieId: '{}', rating: {}", userId, movieId, rating);
 
         // userId from JWT is the email address (sub claim), so look up by email
         User user = userRepository.findByEmail(userId)
@@ -59,6 +59,21 @@ public class RatingService {
         log.info("[RatingService] User found — id: '{}', name: '{}', email: '{}'", user.getId(), user.getName(), user.getEmail());
         log.info("[RatingService] Movie found — id: '{}', title: '{}'", movie.getId(), movie.getTitle());
 
+        var existing = ratingRepository.findByUserIdAndMovieId(user.getId(), movieId);
+
+        if (existing.isPresent()) {
+            Rating existingRating = existing.get();
+            log.info("[RatingService] Existing rating found — ID: {}, updating", existingRating.getId());
+            existingRating.setRating(rating);
+            existingRating.setComment(comment);
+            existingRating.setTimestamp(LocalDateTime.now());
+
+            Rating updated = ratingRepository.save(existingRating);
+            eventProducer.publishRatingUpdatedEvent(updated);
+            log.info("[RatingService] Rating updated successfully — ID: {}", updated.getId());
+            return updated;
+        }
+
         Rating newRating = Rating.builder()
                 .rating(rating)
                 .comment(comment)
@@ -71,22 +86,8 @@ public class RatingService {
 
         Rating saved = ratingRepository.save(newRating);
         eventProducer.publishRatingCreatedEvent(saved);
-        log.info("[RatingService] Rating saved successfully — ID: {}", saved.getId());
+        log.info("[RatingService] Rating created successfully — ID: {}", saved.getId());
         return saved;
-    }
-
-    @Transactional
-    public Rating updateRating(Long ratingId, Integer rating, String comment) {
-        Rating existingRating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new RatingNotFoundException(ratingId));
-
-        existingRating.setRating(rating);
-        existingRating.setComment(comment);
-        existingRating.setTimestamp(LocalDateTime.now());
-
-        Rating updated = ratingRepository.save(existingRating);
-        eventProducer.publishRatingUpdatedEvent(updated);
-        return updated;
     }
 
     @Transactional

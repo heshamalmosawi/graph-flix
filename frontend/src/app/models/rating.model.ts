@@ -15,11 +15,6 @@ export interface CreateRatingRequest {
   comment: string;
 }
 
-export interface UpdateRatingRequest {
-  rating: number;
-  comment: string;
-}
-
 export interface AverageRatingDTO {
   movieId: string;
   average: number;

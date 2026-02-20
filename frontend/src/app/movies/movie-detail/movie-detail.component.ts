@@ -8,7 +8,7 @@ import { RatingService } from '../../services/rating.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { AuthService } from '../../auth/auth.service';
 import { Movie, Person } from '../../models/movie.model';
-import { AverageRatingDTO, CreateRatingRequest, Rating, UpdateRatingRequest } from '../../models/rating.model';
+import { AverageRatingDTO, CreateRatingRequest, Rating } from '../../models/rating.model';
 
 @Component({
   selector: 'app-movie-detail',
@@ -153,48 +153,23 @@ export class MovieDetailComponent implements OnInit {
 
     this.ratingSubmitting = true;
 
-    if (this.isEditMode && this.userExistingRating) {
-      const updateRequest: UpdateRatingRequest = {
-        rating: this.userRating.rating,
-        comment: this.userRating.comment
-      };
-
-      this.ratingService.updateRating(this.userExistingRating.id, updateRequest).subscribe({
-        next: (response) => {
-          this.toastService.success('Rating updated successfully!');
-          this.userExistingRating = response;
-          this.showRatingForm = false;
-          this.isEditMode = false;
-          this.userRating.rating = 5;
-          this.userRating.comment = '';
-          this.loadAverageRating(this.userRating.movieId);
-          this.ratingSubmitting = false;
-        },
-        error: (err) => {
-          this.toastService.error('Failed to update rating. Please try again.');
-          console.error('Error updating rating:', err);
-          this.ratingSubmitting = false;
-        }
-      });
-    } else {
-      this.ratingService.createRating(this.userRating).subscribe({
-        next: (response) => {
-          this.toastService.success('Rating submitted successfully!');
-          this.userExistingRating = response;
-          this.showRatingForm = false;
-          this.isEditMode = false;
-          this.userRating.rating = 5;
-          this.userRating.comment = '';
-          this.loadAverageRating(this.userRating.movieId);
-          this.ratingSubmitting = false;
-        },
-        error: (err) => {
-          this.toastService.error('Failed to submit rating. Please try again.');
-          console.error('Error submitting rating:', err);
-          this.ratingSubmitting = false;
-        }
-      });
-    }
+    this.ratingService.createRating(this.userRating).subscribe({
+      next: (response) => {
+        this.toastService.success(this.isEditMode ? 'Rating updated successfully!' : 'Rating submitted successfully!');
+        this.userExistingRating = response;
+        this.showRatingForm = false;
+        this.isEditMode = false;
+        this.userRating.rating = 5;
+        this.userRating.comment = '';
+        this.loadAverageRating(this.userRating.movieId);
+        this.ratingSubmitting = false;
+      },
+      error: (err) => {
+        this.toastService.error('Failed to submit rating. Please try again.');
+        console.error('Error submitting rating:', err);
+        this.ratingSubmitting = false;
+      }
+    });
   }
 
   deleteRating() {

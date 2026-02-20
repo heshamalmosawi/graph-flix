@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.graphflix.ratingservice.dto.AverageRatingDTO;
 import com.graphflix.ratingservice.dto.CreateRatingRequest;
 import com.graphflix.ratingservice.dto.RatingDTO;
-import com.graphflix.ratingservice.dto.UpdateRatingRequest;
 import com.graphflix.ratingservice.model.Rating;
 import com.graphflix.ratingservice.service.RatingService;
 
@@ -40,48 +38,30 @@ public class RatingController {
     }
 
     @PostMapping
-    public ResponseEntity<RatingDTO> createRating(
+    public ResponseEntity<RatingDTO> upsertRating(
             @RequestBody CreateRatingRequest request) {
 
-        log.info("[RatingController] POST / — createRating called with movieId: {}, rating: {}, comment: '{}'",
+        log.info("[RatingController] POST / — upsertRating called with movieId: {}, rating: {}, comment: '{}'",
                 request.getMovieId(), request.getRating(), request.getComment());
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("[RatingController] SecurityContext auth: {}, isAuthenticated: {}, principal: {}, authorities: {}",
-                auth != null ? auth.getClass().getSimpleName() : "null",
-                auth != null ? auth.isAuthenticated() : false,
-                auth != null ? auth.getName() : "null",
-                auth != null ? auth.getAuthorities() : "null");
-
         if (auth == null || !auth.isAuthenticated()) {
             log.error("[RatingController] No authenticated user — returning 401");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String userId = auth.getName();
-        log.info("[RatingController] Creating rating for userId: '{}', movieId: '{}', rating: {}",
+        log.info("[RatingController] Upserting rating for userId: '{}', movieId: '{}', rating: {}",
                 userId, request.getMovieId(), request.getRating());
 
-        Rating rating = ratingService.createRating(
+        Rating rating = ratingService.upsertRating(
                 userId,
                 request.getMovieId(),
                 request.getRating(),
                 request.getComment()
         );
 
-        log.info("[RatingController] Rating created successfully — ID: {}", rating.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(rating));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<RatingDTO> updateRating(
-            @PathVariable Long id,
-            @RequestBody UpdateRatingRequest request) {
-
-        log.info("[RatingController] PUT /{} — updateRating with rating: {}, comment: '{}'",
-                id, request.getRating(), request.getComment());
-        Rating rating = ratingService.updateRating(id, request.getRating(), request.getComment());
-        log.info("[RatingController] Rating {} updated successfully", id);
+        log.info("[RatingController] Rating upserted successfully — ID: {}", rating.getId());
         return ResponseEntity.ok(toDTO(rating));
     }
 
