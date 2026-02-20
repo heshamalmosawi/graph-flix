@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { MovieService } from '../../services/movie.service';
@@ -13,7 +13,7 @@ import { AverageRatingDTO, CreateRatingRequest, Rating } from '../../models/rati
 @Component({
   selector: 'app-movie-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './movie-detail.component.html',
   styleUrl: './movie-detail.component.scss'
 })
