@@ -78,9 +78,23 @@
         ⭐ Login to Rate
       </button>
       }
-      <button class="btn-watchlist" (click)="addToWatchlist()">
+      @if (isLoggedIn()) {
+      <button class="btn-watchlist" (click)="addToWatchlist()" [disabled]="watchlistUpdating">
+        @if (watchlistUpdating) {
+        <span class="spinner-small"></span>
+        } @else {
+        @if (inWatchlist) {
+        ✓ In Watchlist
+        } @else {
         + Add to Watchlist
+        }
+        }
       </button>
+      } @else {
+      <button class="btn-watchlist" routerLink="/auth" routerLinkActive="active">
+        + Login to Add
+      </button>
+      }
     </div>
 
     @if (userExistingRating) {

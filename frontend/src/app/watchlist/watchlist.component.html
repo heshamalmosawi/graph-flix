@@ -1,0 +1,81 @@
+<div class="watchlist-container">
+  @if (!isLoggedIn()) {
+  <div class="login-prompt">
+    <h2>📋 My Watchlist</h2>
+    <p>Please log in to view and manage your watchlist.</p>
+    <button class="btn-primary" routerLink="/auth">Login</button>
+  </div>
+  }
+
+  @if (isLoggedIn()) {
+  <div class="watchlist-header">
+    <h2>📋 My Watchlist</h2>
+    <p class="count">{{ totalElements }} movie{{ totalElements !== 1 ? 's' : '' }} in your watchlist</p>
+  </div>
+
+  @if (loading) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Loading your watchlist...</p>
+  </div>
+  }
+
+  @if (error) {
+  <div class="error">
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadWatchlist(currentPage)">Try Again</button>
+  </div>
+  }
+
+  @if (!loading && !error) {
+  @if (watchlist.length === 0) {
+  <div class="empty-state">
+    <h3>Your watchlist is empty</h3>
+    <p>Browse movies and add them to your watchlist to keep track of what you want to watch.</p>
+    <button class="btn-primary" routerLink="/movies/search">Browse Movies</button>
+  </div>
+  } @else {
+  <div class="watchlist-content">
+    <div class="watchlist-grid">
+      @for (item of watchlist; track item.id) {
+      <div class="watchlist-item">
+        <a class="movie-link" [routerLink]="['/movies', item.movieId]">
+          <h3 class="movie-title">{{ item.movieTitle }}</h3>
+        </a>
+        <div class="movie-meta">
+          <span class="added-date">Added {{ item.addedAt | date:'medium' }}</span>
+        </div>
+        <div class="item-actions">
+          <button class="btn-view" [routerLink]="['/movies', item.movieId]">
+            View Details
+          </button>
+          <button class="btn-remove" (click)="removeFromWatchlist(item.movieId, item.movieTitle)">
+            Remove
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    @if (totalPages > 1) {
+    <div class="pagination">
+      <button class="page-btn" (click)="previousPage()" [disabled]="first">
+        ← Previous
+      </button>
+      <div class="page-numbers">
+        @for (page of getPages(); track page) {
+        <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+          {{ page + 1 }}
+        </button>
+        }
+      </div>
+      <button class="page-btn" (click)="nextPage()" [disabled]="last">
+        Next →
+      </button>
+    </div>
+    }
+  </div>
+  }
+  }
+  }
+</div>

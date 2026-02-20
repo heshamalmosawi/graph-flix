@@ -4,6 +4,11 @@
   </div>
   <nav class="nav">
     <a class="nav-link" routerLink="/movies/search">Search</a>
+    @if ((isLoggedIn$ | async) === true) {
+    <a class="nav-link watchlist-link" routerLink="/watchlist">
+      📋 Watchlist
+    </a>
+    }
     @if ((isLoggedIn$ | async) === false) {
     <button class="login-btn" routerLink="/auth">Login</button>
     }

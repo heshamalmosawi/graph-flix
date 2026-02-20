@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { MovieService } from '../../services/movie.service';
 import { RatingService } from '../../services/rating.service';
+import { WatchlistService } from '../../services/watchlist.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { AuthService } from '../../auth/auth.service';
 import { Movie, Person } from '../../models/movie.model';
@@ -36,11 +37,16 @@ export class MovieDetailComponent implements OnInit {
   };
   ratingSubmitting = false;
 
+  inWatchlist = false;
+  watchlistLoading = false;
+  watchlistUpdating = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private movieService: MovieService,
     private ratingService: RatingService,
+    private watchlistService: WatchlistService,
     private toastService: ToastService,
     private authService: AuthService
   ) {}
@@ -67,6 +73,7 @@ export class MovieDetailComponent implements OnInit {
         this.loadAverageRating(movieId);
         if (this.isLoggedIn()) {
           this.loadUserRating(movieId);
+          this.loadWatchlistStatus(movieId);
         }
       },
       error: (err) => {
@@ -107,6 +114,22 @@ export class MovieDetailComponent implements OnInit {
           console.error('Error loading user rating:', err);
         }
         this.userRatingLoading = false;
+      }
+    });
+  }
+
+  loadWatchlistStatus(movieId: string) {
+    if (!this.authService.isLoggedIn()) return;
+
+    this.watchlistLoading = true;
+    this.watchlistService.checkMovieInWatchlist(movieId).subscribe({
+      next: (inList) => {
+        this.inWatchlist = inList;
+        this.watchlistLoading = false;
+      },
+      error: (err) => {
+        console.error('Error checking watchlist status:', err);
+        this.watchlistLoading = false;
       }
     });
   }
@@ -202,7 +225,52 @@ export class MovieDetailComponent implements OnInit {
     return this.authService.isLoggedIn();
   }
 
-  addToWatchlist() {}
+  addToWatchlist() {
+    if (!this.movie) return;
+
+    if (this.inWatchlist) {
+      this.removeFromWatchlist();
+    } else {
+      this.watchlistUpdating = true;
+      this.watchlistService.addToWatchlist({
+        movieId: this.movie.id,
+        movieTitle: this.movie.title
+      }).subscribe({
+        next: () => {
+          this.inWatchlist = true;
+          this.watchlistUpdating = false;
+          this.toastService.success('Added to watchlist!');
+        },
+        error: (err) => {
+          this.toastService.error('Failed to add to watchlist. Please try again.');
+          console.error('Error adding to watchlist:', err);
+          this.watchlistUpdating = false;
+        }
+      });
+    }
+  }
+
+  removeFromWatchlist() {
+    if (!this.movie) return;
+
+    if (!confirm('Remove this movie from your watchlist?')) {
+      return;
+    }
+
+    this.watchlistUpdating = true;
+    this.watchlistService.removeFromWatchlist(this.movie.id).subscribe({
+      next: () => {
+        this.inWatchlist = false;
+        this.watchlistUpdating = false;
+        this.toastService.success('Removed from watchlist!');
+      },
+      error: (err) => {
+        this.toastService.error('Failed to remove from watchlist. Please try again.');
+        console.error('Error removing from watchlist:', err);
+        this.watchlistUpdating = false;
+      }
+    });
+  }
 
   getActorNames(): string[] {
     if (!this.movie || !this.movie.actors) return [];
