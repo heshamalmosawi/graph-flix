@@ -193,10 +193,10 @@ export class MovieDetailComponent implements OnInit {
   }
 
   getRatingColor(rating: number): string {
-    if (rating >= 8) return '#10b981';
-    if (rating >= 6) return '#3b82f6';
-    if (rating >= 4) return '#f59e0b';
-    return '#ef4444';
+    if (rating >= 8) return 'var(--color-success)';
+    if (rating >= 6) return 'var(--color-info)';
+    if (rating >= 4) return 'var(--color-warning)';
+    return 'var(--color-error)';
   }
 
   isLoggedIn(): boolean {
