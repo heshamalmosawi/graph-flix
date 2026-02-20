@@ -3,6 +3,8 @@ package com.graphflix.ratingservice.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import com.graphflix.ratingservice.repository.UserRepository;
 @Service
 public class RatingService {
 
+    private static final Logger log = LoggerFactory.getLogger(RatingService.class);
+
     private final RatingRepository ratingRepository;
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
@@ -37,17 +41,43 @@ public class RatingService {
     }
 
     @Transactional
-    public Rating createRating(String userId, String movieId, Integer rating, String comment) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+    public Rating upsertRating(String email, String movieId, Integer rating, String comment) {
+        log.info("[RatingService] upsertRating called — email: '{}', movieId: '{}', rating: {}", email, movieId, rating);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("[RatingService] User not found by email: '{}'", email);
+                    return new UserNotFoundException(email);
+                });
         Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+                .orElseThrow(() -> {
+                    log.error("[RatingService] Movie not found by id: '{}'", movieId);
+                    return new MovieNotFoundException(movieId);
+                });
+
+        log.info("[RatingService] User found — id: '{}', name: '{}', email: '{}'", user.getId(), user.getName(), user.getEmail());
+        log.info("[RatingService] Movie found — id: '{}', title: '{}'", movie.getId(), movie.getTitle());
+
+        var existing = ratingRepository.findByUserIdAndMovieId(user.getEmail(), movieId);
+
+        if (existing.isPresent()) {
+            Rating existingRating = existing.get();
+            log.info("[RatingService] Existing rating found — ID: {}, updating", existingRating.getId());
+            existingRating.setRating(rating);
+            existingRating.setComment(comment);
+            existingRating.setTimestamp(LocalDateTime.now());
+
+            Rating updated = ratingRepository.save(existingRating);
+            eventProducer.publishRatingUpdatedEvent(updated);
+            log.info("[RatingService] Rating updated successfully — ID: {}", updated.getId());
+            return updated;
+        }
 
         Rating newRating = Rating.builder()
                 .rating(rating)
                 .comment(comment)
                 .timestamp(LocalDateTime.now())
-                .userId(user.getId())
+                .userId(user.getEmail())
                 .userName(user.getName())
                 .movieId(movie.getId())
                 .movieTitle(movie.getTitle())
@@ -55,21 +85,8 @@ public class RatingService {
 
         Rating saved = ratingRepository.save(newRating);
         eventProducer.publishRatingCreatedEvent(saved);
+        log.info("[RatingService] Rating created successfully — ID: {}", saved.getId());
         return saved;
-    }
-
-    @Transactional
-    public Rating updateRating(Long ratingId, Integer rating, String comment) {
-        Rating existingRating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new RatingNotFoundException(ratingId));
-
-        existingRating.setRating(rating);
-        existingRating.setComment(comment);
-        existingRating.setTimestamp(LocalDateTime.now());
-
-        Rating updated = ratingRepository.save(existingRating);
-        eventProducer.publishRatingUpdatedEvent(updated);
-        return updated;
     }
 
     @Transactional
@@ -80,14 +97,20 @@ public class RatingService {
         eventProducer.publishRatingDeletedEvent(rating);
     }
 
-    public Page<RatingDTO> getUserRatings(String userId, Pageable pageable) {
-        Page<Rating> ratings = ratingRepository.findByUserId(userId, pageable);
+    public Page<RatingDTO> getUserRatings(String email, Pageable pageable) {
+        Page<Rating> ratings = ratingRepository.findByUserId(email, pageable);
         return ratings.map(this::toDTO);
     }
 
     public Page<RatingDTO> getMovieRatings(String movieId, Pageable pageable) {
         Page<Rating> ratings = ratingRepository.findByMovieId(movieId, pageable);
         return ratings.map(this::toDTO);
+    }
+
+    public RatingDTO getUserRatingForMovie(String email, String movieId) {
+        return ratingRepository.findByUserIdAndMovieId(email, movieId)
+                .map(this::toDTO)
+                .orElse(null);
     }
 
     public AverageRatingDTO getAverageRating(String movieId) {

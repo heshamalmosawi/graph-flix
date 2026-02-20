@@ -24,6 +24,13 @@
           @if (movie.released) {
           <span class="year">{{ movie.released }}</span>
           }
+          @if (averageRating) {
+          <div class="rating-badge" [style.border-color]="getRatingColor(averageRating.average)">
+            <span class="rating-stars">⭐</span>
+            <span class="rating-average" [style.color]="getRatingColor(averageRating.average)">{{ averageRating.average.toFixed(1) }}</span>
+            <span class="rating-count">({{ averageRating.count }} {{ averageRating.count === 1 ? 'rating' : 'ratings' }})</span>
+          </div>
+          }
         </div>
       </div>
     </div>
@@ -58,13 +65,105 @@
     }
 
     <div class="actions-section">
+      @if (isLoggedIn()) {
       <button class="btn-rate" (click)="rateMovie()">
+        @if (userExistingRating) {
+        ⭐ Edit Rating ({{ userExistingRating.rating }}/10)
+        } @else {
         ⭐ Rate this Movie
+        }
       </button>
+      } @else {
+      <button class="btn-rate" routerLink="/auth" routerLinkActive="active">
+        ⭐ Login to Rate
+      </button>
+      }
       <button class="btn-watchlist" (click)="addToWatchlist()">
         + Add to Watchlist
       </button>
     </div>
+
+    @if (userExistingRating) {
+    <div class="user-rating-display">
+      <h3>Your Rating</h3>
+      <div class="rating-summary">
+        <div class="rating-score" [style.border-color]="getRatingColor(userExistingRating.rating)">
+          <span class="score">{{ userExistingRating.rating }}/10</span>
+        </div>
+        <div class="rating-details">
+          @if (userExistingRating.comment) {
+          <p class="comment">{{ userExistingRating.comment }}</p>
+          }
+          <p class="date">Rated on {{ userExistingRating.timestamp | date:'medium' }}</p>
+        </div>
+        <div class="rating-actions">
+          <button class="btn-edit" (click)="rateMovie()">
+            Edit
+          </button>
+          <button class="btn-delete" (click)="deleteRating()">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+
+    @if (showRatingForm) {
+    <div class="rating-form-container">
+      <h3>{{ isEditMode ? 'Edit your rating' : 'Rate this movie' }}</h3>
+      <div class="rating-stars-selector">
+        <span>Select your rating:</span>
+        <div class="stars">
+          @for (star of getStars(0); track star) {
+          <button
+            class="star-btn"
+            [class.active]="userRating.rating >= star"
+            (click)="userRating.rating = star"
+            [disabled]="ratingSubmitting"
+          >
+            ★
+          </button>
+          }
+        </div>
+        <span class="selected-rating">{{ userRating.rating }}/10</span>
+      </div>
+      <div class="comment-section">
+        <label for="comment">Add a comment (optional)</label>
+        <textarea
+          id="comment"
+          [(ngModel)]="userRating.comment"
+          placeholder="Share your thoughts about this movie..."
+          rows="4"
+          maxlength="500"
+          [disabled]="ratingSubmitting"
+        ></textarea>
+        <div class="comment-counter">
+          {{ userRating.comment.length }}/500
+        </div>
+      </div>
+      <div class="rating-actions">
+        <button class="btn-cancel" (click)="cancelRating()" [disabled]="ratingSubmitting">
+          Cancel
+        </button>
+        <button class="btn-submit" (click)="submitRating()" [disabled]="ratingSubmitting">
+          @if (ratingSubmitting) {
+          <span class="spinner-small"></span>
+          @if (isEditMode) {
+          Updating...
+          } @else {
+          Submitting...
+          }
+          } @else {
+          @if (isEditMode) {
+          Update Rating
+          } @else {
+          Submit Rating
+          }
+          }
+        </button>
+      </div>
+    </div>
+    }
   </div>
   }
 </div>

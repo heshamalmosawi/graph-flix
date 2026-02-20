@@ -3,6 +3,8 @@ package com.graphflix.ratingservice.service.security;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,71 +22,76 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     @Autowired
     private JwtService jwtService;
 
-    /**
-     * Filters incoming HTTP requests to validate JWT tokens from the
-     * "Authorization" header. If the header is missing or does not start with
-     * "Bearer ", the request is passed along the filter chain. If the token is
-     * invalid or expired, an HTTP 401 Unauthorized response is returned.
-     * Otherwise, the request proceeds through the filter chain.
-     *
-     * @param request the HTTP request to be processed
-     * @param response the HTTP response to be sent
-     * @param filterChain the filter chain to pass the request and response to
-     * the next filter
-     * @throws ServletException if an error occurs during filtering
-     * @throws IOException if an I/O error occurs during filtering
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-        System.err.println("JwtAuthenticationFilter: Processing request...");
+
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+        log.info("[JWT Filter] >>> Incoming request: {} {} ", method, uri);
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("[JWT Filter] No Bearer token found in Authorization header. Header present: {}", authHeader != null);
             filterChain.doFilter(request, response);
             return;
         }
-        System.out.println("JwtAuthenticationFilter: Found Authorization header, validating token...");
+        log.info("[JWT Filter] Bearer token found, proceeding with validation...");
 
         String token = authHeader.substring(7);
-        
+
         // Validate token first
         if (!jwtService.validateToken(token)) {
+            boolean expired = jwtService.isTokenExpired(token);
+            log.error("[JWT Filter] Token validation FAILED. Expired: {}", expired);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            if (jwtService.isTokenExpired(token)) {
+            if (expired) {
                 response.getWriter().write("Token has expired. Please login again.");
             } else {
                 response.getWriter().write("Invalid token");
             }
             return;
         }
+        log.info("[JWT Filter] Token signature and expiry validated OK.");
 
         try {
-            // Extract claims (like email and role) from the token
-            var claims = jwtService.extractAllClaims(token);
+            // Extract claims
+            Claims claims = jwtService.extractAllClaims(token);
             String email = claims.getSubject();
             String id = (String) claims.get("id");
-            System.out.println("JwtAuthenticationFilter: Token claims extracted - Email: " + email + ", ID: " + id);
-            if (id != null && email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Create authorities list
-                var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
 
-                // Set the Authentication in SecurityContext
-                var userDetails = new org.springframework.security.core.userdetails.User(id, "", authorities);
+            log.info("[JWT Filter] Token claims — subject(email): '{}', id: '{}', all keys: {}",
+                    email, id, claims.keySet());
+            log.info("[JWT Filter] Full claims map: {}", claims);
+
+            // Always use email as principal for consistency across all services
+            String principal = email;
+
+            if (principal == null) {
+                log.error("[JWT Filter] Email (sub claim) is null — cannot authenticate. Skipping auth setup.");
+            } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                log.info("[JWT Filter] SecurityContext already has authentication: {}",
+                        SecurityContextHolder.getContext().getAuthentication());
+            } else {
+                var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+                var userDetails = new org.springframework.security.core.userdetails.User(principal, "", authorities);
                 var auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                log.info("[JWT Filter] Authentication SET in SecurityContext — principal: '{}', authorities: {}",
+                        principal, authorities);
             }
 
         } catch (JwtException e) {
+            log.error("[JWT Filter] JwtException while extracting claims: {}", e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            System.out.println("\n\n\n\nInvalid or expired token: " + e.getMessage());
-            
-            // Check if specifically expired
             if (e.getMessage().contains("expired")) {
                 response.getWriter().write("Token has expired. Please login again.");
             } else {
@@ -91,7 +99,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             return;
         }
-        System.err.println("JwtAuthenticationFilter: Token is valid, proceeding with request...");
+
+        log.info("[JWT Filter] <<< Filter complete, passing to next filter. SecurityContext auth: {}",
+                SecurityContextHolder.getContext().getAuthentication());
         filterChain.doFilter(request, response);
     }
 

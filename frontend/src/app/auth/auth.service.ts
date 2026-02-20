@@ -8,6 +8,7 @@ export interface LoginResponse {
   name: string;
   token: string;
   expiresAt: number;
+  id?: string;
 }
 
 @Injectable({
@@ -45,5 +46,9 @@ export class AuthService {
     this.userSubject.next(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+  }
+
+  isLoggedIn(): boolean {
+    return this.userSubject.value !== null;
   }
 }

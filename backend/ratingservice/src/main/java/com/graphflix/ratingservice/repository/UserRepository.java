@@ -11,4 +11,6 @@ import com.graphflix.ratingservice.model.User;
 public interface UserRepository extends Neo4jRepository<User, String> {
 
     Optional<User> findById(String id);
+
+    Optional<User> findByEmail(String email);
 }
