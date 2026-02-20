@@ -92,8 +92,7 @@ export class MovieDetailComponent implements OnInit {
   }
 
   loadUserRating(movieId: string) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!this.authService.isLoggedIn()) return;
 
     this.userRatingLoading = true;
     this.ratingService.getMyRatingForMovie(movieId).subscribe({
@@ -200,7 +199,7 @@ export class MovieDetailComponent implements OnInit {
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return this.authService.isLoggedIn();
   }
 
   addToWatchlist() {}
