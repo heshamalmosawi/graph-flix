@@ -3,6 +3,8 @@ package com.graphflix.ratingservice.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ import com.graphflix.ratingservice.repository.UserRepository;
 @Service
 public class RatingService {
 
+    private static final Logger log = LoggerFactory.getLogger(RatingService.class);
+
     private final RatingRepository ratingRepository;
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
@@ -38,10 +42,22 @@ public class RatingService {
 
     @Transactional
     public Rating createRating(String userId, String movieId, Integer rating, String comment) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        log.info("[RatingService] createRating called — userId/email: '{}', movieId: '{}', rating: {}", userId, movieId, rating);
+
+        // userId from JWT is the email address (sub claim), so look up by email
+        User user = userRepository.findByEmail(userId)
+                .orElseThrow(() -> {
+                    log.error("[RatingService] User not found by email: '{}'", userId);
+                    return new UserNotFoundException(userId);
+                });
         Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId));
+                .orElseThrow(() -> {
+                    log.error("[RatingService] Movie not found by id: '{}'", movieId);
+                    return new MovieNotFoundException(movieId);
+                });
+
+        log.info("[RatingService] User found — id: '{}', name: '{}', email: '{}'", user.getId(), user.getName(), user.getEmail());
+        log.info("[RatingService] Movie found — id: '{}', title: '{}'", movie.getId(), movie.getTitle());
 
         Rating newRating = Rating.builder()
                 .rating(rating)
@@ -55,6 +71,7 @@ public class RatingService {
 
         Rating saved = ratingRepository.save(newRating);
         eventProducer.publishRatingCreatedEvent(saved);
+        log.info("[RatingService] Rating saved successfully — ID: {}", saved.getId());
         return saved;
     }
 

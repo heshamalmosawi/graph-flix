@@ -8,6 +8,7 @@ export interface LoginResponse {
   name: string;
   token: string;
   expiresAt: number;
+  id?: string;
 }
 
 @Injectable({

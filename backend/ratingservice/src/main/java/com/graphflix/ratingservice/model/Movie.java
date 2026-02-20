@@ -1,7 +1,6 @@
 package com.graphflix.ratingservice.model;
 
-import java.time.LocalDate;
-
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
@@ -19,17 +18,15 @@ import lombok.NoArgsConstructor;
 public class Movie {
 
     @Id
+    @GeneratedValue
     private String id;
 
     @Property("title")
     private String title;
 
-    @Property("releaseDate")
-    private LocalDate releaseDate;
+    @Property("released")
+    private Integer released;
 
-    @Property("genre")
-    private String genre;
-
-    @Property("imdbRating")
-    private Float imdbRating;
+    @Property("tagline")
+    private String tagline;
 }
