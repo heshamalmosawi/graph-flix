@@ -3,6 +3,8 @@ package com.graphflix.ratingservice.service.security;
 import java.security.Key;
 import java.util.Date;
 
+import javax.crypto.SecretKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +43,8 @@ public class JwtService {
     public Claims extractAllClaims(String token) throws JwtException {
         try {
             var claims = Jwts.parser()
-                    .setSigningKey(key).build()
+                    .verifyWith((SecretKey) key)
+                    .build()
                     .parseSignedClaims(token)
                     .getBody();
             log.debug("[JwtService] Parsed claims: {}", claims);

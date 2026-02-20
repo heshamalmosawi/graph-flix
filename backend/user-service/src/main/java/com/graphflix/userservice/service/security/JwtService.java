@@ -3,6 +3,8 @@ package com.graphflix.userservice.service.security;
 import java.security.Key;
 import java.util.Date;
 
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +39,8 @@ public class JwtService {
     public Claims extractAllClaims(String token) throws JwtException {
         try {
             var x = Jwts.parser()
-                    .setSigningKey(key).build()
+                    .verifyWith((SecretKey) key)
+                    .build()
                     .parseSignedClaims(token)
                     .getBody();
             System.out.println("claims:" + x);
