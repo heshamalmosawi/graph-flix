@@ -41,14 +41,13 @@ public class RatingService {
     }
 
     @Transactional
-    public Rating upsertRating(String userId, String movieId, Integer rating, String comment) {
-        log.info("[RatingService] upsertRating called — userId/email: '{}', movieId: '{}', rating: {}", userId, movieId, rating);
+    public Rating upsertRating(String email, String movieId, Integer rating, String comment) {
+        log.info("[RatingService] upsertRating called — email: '{}', movieId: '{}', rating: {}", email, movieId, rating);
 
-        // userId from JWT is the email address (sub claim), so look up by email
-        User user = userRepository.findByEmail(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.error("[RatingService] User not found by email: '{}'", userId);
-                    return new UserNotFoundException(userId);
+                    log.error("[RatingService] User not found by email: '{}'", email);
+                    return new UserNotFoundException(email);
                 });
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> {
@@ -98,8 +97,8 @@ public class RatingService {
         eventProducer.publishRatingDeletedEvent(rating);
     }
 
-    public Page<RatingDTO> getUserRatings(String userId, Pageable pageable) {
-        Page<Rating> ratings = ratingRepository.findByUserId(userId, pageable);
+    public Page<RatingDTO> getUserRatings(String email, Pageable pageable) {
+        Page<Rating> ratings = ratingRepository.findByUserId(email, pageable);
         return ratings.map(this::toDTO);
     }
 

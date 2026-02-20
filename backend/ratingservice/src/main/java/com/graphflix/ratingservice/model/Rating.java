@@ -39,6 +39,8 @@ public class Rating {
     @Property("timestamp")
     private LocalDateTime timestamp;
 
+    // Note: This field stores the user's email address, not their database ID
+    // Email is used as the identifier for consistency across microservices
     @Property("userId")
     private String userId;
 

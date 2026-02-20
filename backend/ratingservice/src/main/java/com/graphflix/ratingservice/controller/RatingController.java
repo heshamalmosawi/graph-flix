@@ -50,12 +50,12 @@ public class RatingController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String userId = auth.getName();
-        log.info("[RatingController] Upserting rating for userId: '{}', movieId: '{}', rating: {}",
-                userId, request.getMovieId(), request.getRating());
+        String email = auth.getName();
+        log.info("[RatingController] Upserting rating for email: '{}', movieId: '{}', rating: {}",
+                email, request.getMovieId(), request.getRating());
 
         Rating rating = ratingService.upsertRating(
-                userId,
+                email,
                 request.getMovieId(),
                 request.getRating(),
                 request.getComment()
@@ -96,9 +96,9 @@ public class RatingController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String userId = auth.getName();
-        log.info("[RatingController] GET /my-rating/{} — userId: '{}'", movieId, userId);
-        RatingDTO rating = ratingService.getUserRatingForMovie(userId, movieId);
+        String email = auth.getName();
+        log.info("[RatingController] GET /my-rating/{} — email: '{}'", movieId, email);
+        RatingDTO rating = ratingService.getUserRatingForMovie(email, movieId);
         if (rating == null) {
             return ResponseEntity.noContent().build();
         }
