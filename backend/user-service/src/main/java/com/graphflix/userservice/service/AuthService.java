@@ -62,6 +62,11 @@ public class AuthService {
         }
     }
 
+    public User findUserByEmail(String email) {
+        return userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public LoginResponse loginUser(LoginRequest req) {
         User user = userRepo.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));

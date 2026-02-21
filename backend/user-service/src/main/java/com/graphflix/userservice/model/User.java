@@ -33,4 +33,15 @@ public class User {
     @Property("createdAt")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Property("twoFactorEnabled")
+    @Builder.Default
+    private boolean twoFactorEnabled = false;
+
+    @Property("totpSecret")
+    private String totpSecret;
+
+    @Property("tokenVersion")
+    @Builder.Default
+    private int tokenVersion = 0;
 }

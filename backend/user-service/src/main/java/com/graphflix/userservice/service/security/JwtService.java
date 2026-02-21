@@ -78,4 +78,43 @@ public class JwtService {
         return expirationDate.getTime() - System.currentTimeMillis();
     }
 
+    public String generateTemporaryToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getId())
+                .claim("type", "TEMPORARY_2FA")
+                .claim("version", user.getTokenVersion())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000)) // 5 minutes
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean isTemporaryToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return "TEMPORARY_2FA".equals(claims.get("type"));
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    public int extractVersion(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object version = claims.get("version");
+            return version != null ? (int) version : 0;
+        } catch (JwtException e) {
+            return 0;
+        }
+    }
+
+    public String extractUserId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.getSubject();
+        } catch (JwtException e) {
+            throw new JwtException("Invalid token", e);
+        }
+    }
+
 }

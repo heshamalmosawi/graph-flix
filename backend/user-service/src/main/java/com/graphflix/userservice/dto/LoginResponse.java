@@ -20,4 +20,10 @@ public class LoginResponse {
     @NotNull
     private Long expiresAt;
 
+    private String status;
+
+    private String message;
+
+    private String id;
+
 }
