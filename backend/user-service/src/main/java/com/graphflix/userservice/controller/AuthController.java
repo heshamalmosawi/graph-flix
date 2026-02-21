@@ -57,7 +57,7 @@ public class AuthController {
         try {
             User user = authService.findUserByEmail(request.getEmail());
 
-            if (userRepository.isTwoFactorEnabled(user.getId())) {
+            if (userRepository.isTwoFactorEnabled(user.getEmail())) {
                 String tempToken = jwtService.generateTemporaryToken(user);
                 long expiryTime = System.currentTimeMillis() + 5 * 60 * 1000L;
                 return ResponseEntity.ok(LoginResponse.builder()
@@ -87,8 +87,8 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Invalid token type");
             }
 
-            String userId = jwtService.extractUserId(token);
-            User user = userRepository.findById(userId)
+            String email = jwtService.extractEmail(token);
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             int tokenVersion = jwtService.extractVersion(token);
@@ -96,7 +96,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Token version mismatch");
             }
 
-            String secretKey = userRepository.getTotpSecret(userId);
+            String secretKey = userRepository.getTotpSecret(email);
             if (totpService.verifyCode(secretKey, request.getCode())) {
                 long expiryTime = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
                 return ResponseEntity.ok(LoginResponse.builder()
@@ -118,14 +118,14 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> setup2FA(Principal principal) {
         try {
-            String userId = principal.getName();
-            User user = userRepository.findById(userId)
+            String email = principal.getName();
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             String secretKey = totpService.generateSecretKey();
             String qrCodeUrl = totpService.generateQRCodeUrl(user.getEmail(), secretKey);
 
-            userRepository.setTotpSecret(userId, secretKey);
+            userRepository.setTotpSecret(email, secretKey);
 
             return ResponseEntity.ok(Map.of(
                     "qrCode", qrCodeUrl,
@@ -143,11 +143,11 @@ public class AuthController {
             Principal principal,
             @RequestBody TwoFactorRequest request) {
         try {
-            String userId = principal.getName();
-            User user = userRepository.findById(userId)
+            String email = principal.getName();
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            String secretKey = userRepository.getTotpSecret(userId);
+            String secretKey = userRepository.getTotpSecret(email);
             if (secretKey == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "2FA setup required"));
             }
@@ -156,7 +156,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid verification code"));
             }
 
-            userRepository.setTwoFactorEnabled(userId, true);
+            userRepository.setTwoFactorEnabled(email, true);
             return ResponseEntity.ok(Map.of("message", "2FA enabled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -170,21 +170,21 @@ public class AuthController {
             Principal principal,
             @RequestBody TwoFactorRequest request) {
         try {
-            String userId = principal.getName();
-            User user = userRepository.findById(userId)
+            String email = principal.getName();
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (!userRepository.isTwoFactorEnabled(userId)) {
+            if (!userRepository.isTwoFactorEnabled(email)) {
                 return ResponseEntity.badRequest().body(Map.of("error", "2FA is not enabled"));
             }
 
-            String secretKey = userRepository.getTotpSecret(userId);
+            String secretKey = userRepository.getTotpSecret(email);
             if (!totpService.verifyCode(secretKey, request.getCode())) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid code"));
             }
 
-            userRepository.setTwoFactorEnabled(userId, false);
-            userRepository.setTotpSecret(userId, null);
+            userRepository.setTwoFactorEnabled(email, false);
+            userRepository.setTotpSecret(email, null);
             return ResponseEntity.ok(Map.of("message", "2FA disabled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

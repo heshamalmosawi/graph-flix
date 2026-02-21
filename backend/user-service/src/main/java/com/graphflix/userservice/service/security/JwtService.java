@@ -80,7 +80,7 @@ public class JwtService {
 
     public String generateTemporaryToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getId())
+                .setSubject(user.getEmail())
                 .claim("type", "TEMPORARY_2FA")
                 .claim("version", user.getTokenVersion())
                 .setIssuedAt(new Date())
@@ -108,7 +108,7 @@ public class JwtService {
         }
     }
 
-    public String extractUserId(String token) {
+    public String extractEmail(String token) {
         try {
             Claims claims = extractAllClaims(token);
             return claims.getSubject();
