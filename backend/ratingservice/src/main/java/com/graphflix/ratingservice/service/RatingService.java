@@ -2,11 +2,13 @@ package com.graphflix.ratingservice.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,13 +33,42 @@ public class RatingService {
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
     private final RatingEventProducer eventProducer;
+    private final Neo4jClient neo4jClient;
 
     public RatingService(RatingRepository ratingRepository, UserRepository userRepository,
-            MovieRepository movieRepository, RatingEventProducer eventProducer) {
+            MovieRepository movieRepository, RatingEventProducer eventProducer, Neo4jClient neo4jClient) {
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
         this.eventProducer = eventProducer;
+        this.neo4jClient = neo4jClient;
+    }
+
+    private void mergeRatedRelationship(String email, String movieTitle, Integer rating, String comment, LocalDateTime timestamp) {
+        neo4jClient.query("""
+                MATCH (u:User {email: $email})
+                MATCH (m:Movie {title: $movieTitle})
+                MERGE (u)-[r:RATED]->(m)
+                SET r.rating = $rating, r.comment = $comment, r.timestamp = $timestamp
+                """)
+                .bindAll(Map.of(
+                        "email", email,
+                        "movieTitle", movieTitle,
+                        "rating", rating,
+                        "comment", comment != null ? comment : "",
+                        "timestamp", timestamp.toString()))
+                .run();
+        log.info("[RatingService] RATED relationship merged — user: '{}', movie: '{}'", email, movieTitle);
+    }
+
+    private void deleteRatedRelationship(String email, String movieTitle) {
+        neo4jClient.query("""
+                MATCH (u:User {email: $email})-[r:RATED]->(m:Movie {title: $movieTitle})
+                DELETE r
+                """)
+                .bindAll(Map.of("email", email, "movieTitle", movieTitle))
+                .run();
+        log.info("[RatingService] RATED relationship deleted — user: '{}', movie: '{}'", email, movieTitle);
     }
 
     @Transactional
@@ -68,15 +99,17 @@ public class RatingService {
             existingRating.setTimestamp(LocalDateTime.now());
 
             Rating updated = ratingRepository.save(existingRating);
+            mergeRatedRelationship(user.getEmail(), movie.getTitle(), rating, comment, updated.getTimestamp());
             eventProducer.publishRatingUpdatedEvent(updated);
             log.info("[RatingService] Rating updated successfully — ID: {}", updated.getId());
             return updated;
         }
 
+        LocalDateTime now = LocalDateTime.now();
         Rating newRating = Rating.builder()
                 .rating(rating)
                 .comment(comment)
-                .timestamp(LocalDateTime.now())
+                .timestamp(now)
                 .userId(user.getEmail())
                 .userName(user.getName())
                 .movieId(movie.getId())
@@ -84,6 +117,7 @@ public class RatingService {
                 .build();
 
         Rating saved = ratingRepository.save(newRating);
+        mergeRatedRelationship(user.getEmail(), movie.getTitle(), rating, comment, now);
         eventProducer.publishRatingCreatedEvent(saved);
         log.info("[RatingService] Rating created successfully — ID: {}", saved.getId());
         return saved;
@@ -93,6 +127,7 @@ public class RatingService {
     public void deleteRating(Long ratingId) {
         Rating rating = ratingRepository.findById(ratingId)
                 .orElseThrow(() -> new RatingNotFoundException(ratingId));
+        deleteRatedRelationship(rating.getUserId(), rating.getMovieTitle());
         ratingRepository.delete(rating);
         eventProducer.publishRatingDeletedEvent(rating);
     }

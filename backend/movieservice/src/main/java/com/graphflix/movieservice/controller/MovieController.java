@@ -98,7 +98,7 @@ public class MovieController {
                 .map(this::toDTO)
                 .collect(Collectors.toList());
 
-        Pageable pageable = PageRequest.of(page, size);
+
         PagedMovieResponse response = PagedMovieResponse.builder()
                 .content(movieDTOs)
                 .totalElements(movies.size())

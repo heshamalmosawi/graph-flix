@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 
 import { MovieService } from '../services/movie.service';
 import { MovieCardComponent } from '../movies/movie-card/movie-card.component';
+import { RecommendationCarouselComponent } from '../recommendations/recommendation-carousel.component';
 import { Movie, PagedMovieResponse } from '../models/movie.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MovieCardComponent],
+  imports: [CommonModule, MovieCardComponent, RecommendationCarouselComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

@@ -1,0 +1,78 @@
+<div class="recommendations-section">
+  @if (loading) {
+  <div class="recommendations-loading">
+    <div class="spinner"></div>
+    <p>Loading recommendations...</p>
+  </div>
+  }
+
+  @if (!loading && error) {
+  <div class="recommendations-error">
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadRecommendations()">Retry</button>
+  </div>
+  }
+
+  @if (!loading && !error && recommendations.length > 0) {
+  <div class="recommendations-header">
+    <h2>{{ currentUser ? 'Recommended for You' : 'Trending Now' }}</h2>
+    <p class="subtitle">Personalized picks based on your preferences</p>
+  </div>
+  
+  <div class="carousel-container">
+    <button 
+      class="carousel-btn carousel-btn-left"
+      [disabled]="!canScrollLeft"
+      (click)="scrollLeft()">
+      &#8249;
+    </button>
+    
+    <div class="carousel-viewport">
+      <div class="carousel-track" [style.transform]="'translateX(-' + (carouselIndex * 340) + 'px)'">
+        @for (movie of recommendations; track movie.id) {
+        <div 
+          class="recommendation-card"
+          (click)="goToMovie(movie.id)">
+          <div class="recommendation-content">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <div class="movie-meta">
+              @if (movie.released) {
+              <span class="movie-year">{{ movie.released }}</span>
+              }
+              <span class="match-score">{{ (movie.score * 100).toFixed(0) }}% match</span>
+            </div>
+            @if (movie.tagline) {
+            <p class="movie-tagline">{{ movie.tagline }}</p>
+            }
+            <div class="recommendation-reason">
+              <span class="reason-icon">✨</span>
+              <span>{{ movie.reason }}</span>
+            </div>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="movie.score * 100"></div>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    
+    <button 
+      class="carousel-btn carousel-btn-right"
+      [disabled]="!canScrollRight"
+      (click)="scrollRight()">
+      &#8250;
+    </button>
+  </div>
+  
+  <div class="carousel-indicators">
+    @for (movie of recommendations; track movie.id; let i = $index) {
+    <button 
+      class="indicator" 
+      [class.active]="i === carouselIndex"
+      (click)="goToSlide(i)">
+    </button>
+    }
+  </div>
+  }
+</div>
