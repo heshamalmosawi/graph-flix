@@ -1,5 +1,8 @@
 package com.graphflix.userservice.controller;
 
+import java.security.Principal;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +17,11 @@ import com.graphflix.userservice.dto.LoginRequest;
 import com.graphflix.userservice.dto.LoginResponse;
 import com.graphflix.userservice.dto.RegisterRequest;
 import com.graphflix.userservice.dto.TwoFactorRequest;
-import com.graphflix.userservice.dto.TwoFactorSetupResponse;
 import com.graphflix.userservice.model.User;
 import com.graphflix.userservice.repository.UserRepository;
 import com.graphflix.userservice.service.AuthService;
 import com.graphflix.userservice.service.TOTPService;
-import com.graphflix.userservice.service.security.JwtAuthenticationFilter;
 import com.graphflix.userservice.service.security.JwtService;
-
-import java.security.Principal;
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -119,19 +116,30 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> setup2FA(Principal principal) {
         try {
             String email = principal.getName();
+            System.out.println("[2FA SETUP] Email from principal: " + email);
+            
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            System.out.println("[2FA SETUP] User found: " + user.getEmail());
 
             String secretKey = totpService.generateSecretKey();
+            System.out.println("[2FA SETUP] Generated secret key: " + secretKey);
+            
             String qrCodeUrl = totpService.generateQRCodeUrl(user.getEmail(), secretKey);
+            System.out.println("[2FA SETUP] QR Code URL: " + qrCodeUrl);
 
-            userRepository.setTotpSecret(email, secretKey);
+            user.setTotpSecret(secretKey);
+            User savedUser = userRepository.save(user);
+            System.out.println("[2FA SETUP] User saved: " + (savedUser != null ? "SUCCESS" : "FAILED"));
+            System.out.println("[2FA SETUP] User totpSecret after save: " + (savedUser != null ? savedUser.getTotpSecret() : "NULL"));
 
             return ResponseEntity.ok(Map.of(
                     "qrCode", qrCodeUrl,
                     "secret", secretKey
             ));
         } catch (Exception e) {
+            System.out.println("[2FA SETUP] Error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
         }
@@ -144,21 +152,37 @@ public class AuthController {
             @RequestBody TwoFactorRequest request) {
         try {
             String email = principal.getName();
+            System.out.println("[2FA ENABLE] Email from principal: " + email);
+            
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            System.out.println("[2FA ENABLE] User found: " + user.getEmail());
 
             String secretKey = userRepository.getTotpSecret(email);
+            System.out.println("[2FA ENABLE] Secret key from DB: " + (secretKey != null ? secretKey : "NULL"));
+            
             if (secretKey == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "2FA setup required"));
             }
 
-            if (!totpService.verifyCode(secretKey, request.getCode())) {
+            String code = request.getCode();
+            System.out.println("[2FA ENABLE] Code to verify: " + code);
+            
+            boolean isValid = totpService.verifyCode(secretKey, code);
+            System.out.println("[2FA ENABLE] Verification result: " + isValid);
+            
+            if (!isValid) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid verification code"));
             }
 
-            userRepository.setTwoFactorEnabled(email, true);
+            user.setTwoFactorEnabled(true);
+            user.setTokenVersion(user.getTokenVersion() + 1);
+            User savedUser = userRepository.save(user);
+            System.out.println("[2FA ENABLE] User saved: " + (savedUser != null ? "SUCCESS" : "FAILED"));
             return ResponseEntity.ok(Map.of("message", "2FA enabled successfully"));
         } catch (Exception e) {
+            System.out.println("[2FA ENABLE] Error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", e.getMessage()));
         }
@@ -183,8 +207,9 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid code"));
             }
 
+            user.setTotpSecret(null);
             userRepository.setTwoFactorEnabled(email, false);
-            userRepository.setTotpSecret(email, null);
+            userRepository.save(user);
             return ResponseEntity.ok(Map.of("message", "2FA disabled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
