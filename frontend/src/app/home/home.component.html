@@ -1,4 +1,6 @@
 <div class="movie-list-container">
+  <app-recommendation-carousel [limit]="10"></app-recommendation-carousel>
+
   @if (loading) {
   <div class="loading">
     <div class="spinner"></div>
@@ -30,7 +32,8 @@
   <div class="movies-grid">
     <app-movie-card
       *ngFor="let movie of movies"
-      [movie]="movie">
+      [movie]="movie"
+      [showWatchlistButton]="false">
     </app-movie-card>
   </div>
   }

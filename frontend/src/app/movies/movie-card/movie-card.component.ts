@@ -16,6 +16,7 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class MovieCardComponent {
   @Input() movie!: Movie;
+  @Input() showWatchlistButton = true;
   inWatchlist = false;
   watchlistLoading = false;
   watchlistUpdating = false;
@@ -26,13 +27,13 @@ export class MovieCardComponent {
     private toastService: ToastService,
     private authService: AuthService
   ) {
-    if (this.authService.isLoggedIn() && this.movie) {
+    if (this.showWatchlistButton && this.authService.isLoggedIn() && this.movie) {
       this.checkWatchlistStatus();
     }
   }
 
   ngOnChanges() {
-    if (this.authService.isLoggedIn() && this.movie) {
+    if (this.showWatchlistButton && this.authService.isLoggedIn() && this.movie) {
       this.checkWatchlistStatus();
     }
   }

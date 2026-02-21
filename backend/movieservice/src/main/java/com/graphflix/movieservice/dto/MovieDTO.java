@@ -2,8 +2,6 @@ package com.graphflix.movieservice.dto;
 
 import java.util.Set;
 
-import com.graphflix.movieservice.model.Person;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

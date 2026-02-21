@@ -8,6 +8,7 @@
           {{ movie.released }}
         </div>
         }
+        @if (showWatchlistButton) {
         <button
           class="watchlist-btn"
           [class.in-watchlist]="inWatchlist"
@@ -25,6 +26,7 @@
           +
           }
         </button>
+        }
       </div>
     </div>
     @if (movie.tagline) {
