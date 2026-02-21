@@ -22,12 +22,19 @@ export class RecommendationCarouselComponent implements OnInit {
   currentUser: LoginResponse | null = null;
 
   carouselIndex = 0;
+  circular = true;
 
   get canScrollLeft(): boolean {
+    if (this.circular) {
+      return this.recommendations.length > 1;
+    }
     return this.carouselIndex > 0;
   }
 
   get canScrollRight(): boolean {
+    if (this.circular) {
+      return this.recommendations.length > 1;
+    }
     return this.carouselIndex < this.recommendations.length - 1;
   }
 
@@ -78,13 +85,21 @@ export class RecommendationCarouselComponent implements OnInit {
   }
 
   scrollLeft() {
-    if (this.canScrollLeft) {
+    if (this.circular && this.recommendations.length > 1) {
+      this.carouselIndex = this.carouselIndex === 0 
+        ? this.recommendations.length - 1 
+        : this.carouselIndex - 1;
+    } else if (this.canScrollLeft) {
       this.carouselIndex = Math.max(0, this.carouselIndex - 1);
     }
   }
 
   scrollRight() {
-    if (this.canScrollRight) {
+    if (this.circular && this.recommendations.length > 1) {
+      this.carouselIndex = this.carouselIndex === this.recommendations.length - 1 
+        ? 0 
+        : this.carouselIndex + 1;
+    } else if (this.canScrollRight) {
       this.carouselIndex = Math.min(this.recommendations.length - 1, this.carouselIndex + 1);
     }
   }
