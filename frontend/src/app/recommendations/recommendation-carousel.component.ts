@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { RecommendationService } from '../services/recommendation.service';
 import { AuthService, LoginResponse } from '../auth/auth.service';
@@ -23,6 +24,10 @@ export class RecommendationCarouselComponent implements OnInit {
 
   carouselIndex = 0;
   circular = true;
+  readonly cardWidth = 320;
+  readonly cardGap = 16;
+  readonly mobileCardWidth = 280;
+  isMobile = false;
 
   get canScrollLeft(): boolean {
     if (this.circular) {
@@ -42,13 +47,24 @@ export class RecommendationCarouselComponent implements OnInit {
     private recommendationService: RecommendationService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    this.checkMobile();
+    window.addEventListener('resize', () => this.checkMobile());
+  }
 
   ngOnInit() {
-    this.authService.user$.subscribe(user => {
+    this.authService.user$.pipe(takeUntilDestroyed()).subscribe(user => {
       this.currentUser = user;
       this.loadRecommendations();
     });
+  }
+
+  get slideWidth(): number {
+    return this.isMobile ? this.mobileCardWidth : this.cardWidth;
+  }
+
+  private checkMobile(): void {
+    this.isMobile = window.innerWidth <= 768;
   }
 
   loadRecommendations() {

@@ -16,7 +16,7 @@
   @if (!loading && !error && recommendations.length > 0) {
   <div class="recommendations-header">
     <h2>{{ currentUser ? 'Recommended for You' : 'Trending Now' }}</h2>
-    <p class="subtitle">Personalized picks based on your preferences</p>
+    <p class="subtitle">{{ currentUser ? 'Personalized picks based on your preferences' : 'Popular movies everyone is watching' }}</p>
   </div>
   
   <div class="carousel-container">
@@ -28,7 +28,7 @@
     </button>
     
     <div class="carousel-viewport">
-      <div class="carousel-track" [style.transform]="'translateX(-' + (carouselIndex * 340) + 'px)'">
+      <div class="carousel-track" [style.transform]="'translateX(-' + (carouselIndex * (slideWidth + cardGap)) + 'px)'">
         @for (movie of recommendations; track movie.id) {
         <div 
           class="recommendation-card"
