@@ -1,5 +1,7 @@
 package com.graphflix.userservice.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
@@ -7,6 +9,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticator;
 @Service
 public class TOTPService {
 
+    private static final Logger log = LoggerFactory.getLogger(TOTPService.class);
     private static final String APP_NAME = "GraphFlix";
 
     private final GoogleAuthenticator gAuth = new GoogleAuthenticator();
@@ -21,20 +24,20 @@ public class TOTPService {
     }
 
     public boolean verifyCode(String secretKey, String code) {
-        System.out.println("[TOTP] Verifying code - Secret: " + secretKey + ", Code: " + code);
+        log.debug("[TOTP] Verifying code - Secret: {}, Code: {}", secretKey != null ? "***" : "null", code != null ? "***" : "null");
 
         if (secretKey == null || code == null) {
-            System.out.println("[TOTP] Secret key or code is null");
+            log.warn("[TOTP] Secret key or code is null");
             return false;
         }
 
         try {
             int numericCode = Integer.parseInt(code);
             boolean result = gAuth.authorize(secretKey, numericCode);
-            System.out.println("[TOTP] Verification result: " + result);
+            log.info("[TOTP] Verification result: {}", result);
             return result;
         } catch (NumberFormatException e) {
-            System.out.println("[TOTP] Number format exception: " + e.getMessage());
+            log.error("[TOTP] Number format exception: {}", e.getMessage());
             return false;
         }
     }
