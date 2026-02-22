@@ -59,6 +59,7 @@ a {
     .mat-mdc-snackbar-surface {
       background-color: var(--color-success);
       color: #fff;
+      border-radius: var(--radius-lg);
     }
     button {
       color: #fff !important;
@@ -69,6 +70,7 @@ a {
     .mat-mdc-snackbar-surface {
       background-color: var(--color-error);
       color: #fff;
+      border-radius: var(--radius-lg);
     }
     button {
       color: #fff !important;
@@ -79,6 +81,7 @@ a {
     .mat-mdc-snackbar-surface {
       background-color: var(--color-info);
       color: #fff;
+      border-radius: var(--radius-lg);
     }
     button {
       color: #fff !important;
@@ -89,6 +92,7 @@ a {
     .mat-mdc-snackbar-surface {
       background-color: var(--color-warning);
       color: #fff;
+      border-radius: var(--radius-lg);
     }
     button {
       color: #fff !important;

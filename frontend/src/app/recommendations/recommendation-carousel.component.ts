@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RecommendationService } from '../services/recommendation.service';
 import { AuthService, LoginResponse } from '../auth/auth.service';
 import { RecommendedMovie } from '../models/recommendation.model';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   selector: 'app-recommendation-carousel',
@@ -21,6 +22,7 @@ export class RecommendationCarouselComponent implements OnInit {
   loading = false;
   error: string | null = null;
   currentUser: LoginResponse | null = null;
+  private destroyRef = inject(DestroyRef);
 
   carouselIndex = 0;
   circular = true;
@@ -46,14 +48,15 @@ export class RecommendationCarouselComponent implements OnInit {
   constructor(
     private recommendationService: RecommendationService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.checkMobile();
     window.addEventListener('resize', () => this.checkMobile());
   }
 
   ngOnInit() {
-    this.authService.user$.pipe(takeUntilDestroyed()).subscribe(user => {
+    this.authService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(user => {
       this.currentUser = user;
       this.loadRecommendations();
     });
@@ -126,5 +129,19 @@ export class RecommendationCarouselComponent implements OnInit {
 
   goToSlide(index: number) {
     this.carouselIndex = index;
+  }
+
+  shareRecommendation(movie: RecommendedMovie, event: Event) {
+    event.stopPropagation();
+    
+    const message = `Check out "${movie.title}" on GraphFlix! ${(movie.score * 100).toFixed(0)}% match for you based on ${movie.reason}.`;
+    const movieUrl = `${window.location.origin}/movies/${movie.id}`;
+    const shareText = `${message}\n\n${movieUrl}`;
+    
+    navigator.clipboard.writeText(shareText).then(() => {
+      this.toastService.success('Recommendation copied to clipboard!');
+    }).catch(err => {
+      this.toastService.error('Failed to copy recommendation');
+    });
   }
 }
