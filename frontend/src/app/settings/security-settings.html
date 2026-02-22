@@ -1,0 +1,153 @@
+<div class="security-settings">
+  <h1>Security Settings</h1>
+  
+  <div class="settings-container">
+    <div class="security-section">
+      <div class="section-header">
+        <h2>Two-Factor Authentication</h2>
+        @if (!is2FAEnabled && !isSetupMode) {
+          <p class="section-description">
+            Add an extra layer of security to your account by enabling two-factor authentication.
+          </p>
+        }
+      </div>
+
+      @if (!is2FAEnabled) {
+        @if (!isSetupMode) {
+          <div class="setup-prompt">
+            <div class="icon-wrapper disabled">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+              </svg>
+            </div>
+            <p class="status-text">2FA is currently disabled</p>
+            <button (click)="onSetup2FA()" [disabled]="isSetupLoading" class="btn-primary">
+              Enable 2FA @if (isSetupLoading) { <span class="spinner"></span> }
+            </button>
+          </div>
+        } @else {
+          <div class="setup-mode">
+            <h3>Setup Two-Factor Authentication</h3>
+            
+            <div class="steps">
+              <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <h4>Scan QR Code</h4>
+                  <p>Use Google Authenticator, Authy, or any TOTP-compatible app to scan the QR code below.</p>
+                  
+                  <div class="qr-container">
+                    @if (qrCodeUrl) {
+                      <img [src]="qrCodeUrl" alt="QR Code for 2FA setup" class="qr-code">
+                    } @else {
+                      <div class="qr-placeholder">Loading QR code...</div>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <h4>Or Enter Code Manually</h4>
+                  <p>If you cannot scan the QR code, enter this code in your authenticator app:</p>
+                  
+                  <div class="secret-key-container">
+                    <code class="secret-key">{{ secretKey }}</code>
+                    <button (click)="copySecretKey()" class="btn-copy" type="button">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <h4>Verify Setup</h4>
+                  <p>Enter the 6-digit code from your authenticator app to complete setup:</p>
+                  
+                  <form [formGroup]="setupForm" (ngSubmit)="onEnable2FA()">
+                    <div class="code-input-group">
+                      <input 
+                        type="text" 
+                        formControlName="code" 
+                        placeholder="123456"
+                        maxlength="6"
+                        inputmode="numeric"
+                        autocomplete="one-time-code">
+                      <button type="submit" [disabled]="!setupForm.valid || isEnableLoading" class="btn-confirm">
+                        Enable @if (isEnableLoading) { <span class="spinner"></span> }
+                      </button>
+                    </div>
+                    @if (setupForm.get('code')?.touched && setupForm.get('code')?.invalid) {
+                      <div class="validation-error">
+                        @if (setupForm.get('code')?.errors?.['required']) {
+                          <small>Code is required</small>
+                        }
+                        @if (setupForm.get('code')?.errors?.['pattern']) {
+                          <small>Enter a valid 6-digit code</small>
+                        }
+                      </div>
+                    }
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="setup-actions">
+              <button (click)="onCancelSetup()" class="btn-cancel">Cancel</button>
+            </div>
+          </div>
+        }
+      } @else {
+        <div class="enabled-state">
+          <div class="icon-wrapper enabled">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+            </svg>
+          </div>
+          <p class="status-text">2FA is enabled</p>
+          <p class="status-description">
+            Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when logging in.
+          </p>
+          
+          <div class="disable-section">
+            <h3>Disable Two-Factor Authentication</h3>
+            <p>Enter your 2FA code to disable two-factor authentication:</p>
+            
+            <form [formGroup]="disableForm" (ngSubmit)="onDisable2FA()">
+              <div class="code-input-group">
+                <input 
+                  type="text" 
+                  formControlName="code" 
+                  placeholder="123456"
+                  maxlength="6"
+                  inputmode="numeric"
+                  autocomplete="one-time-code">
+                <button type="submit" [disabled]="!disableForm.valid || isDisableLoading" class="btn-danger">
+                  Disable @if (isDisableLoading) { <span class="spinner"></span> }
+                </button>
+              </div>
+              @if (disableForm.get('code')?.touched && disableForm.get('code')?.invalid) {
+                <div class="validation-error">
+                  @if (disableForm.get('code')?.errors?.['required']) {
+                    <small>Code is required</small>
+                  }
+                  @if (disableForm.get('code')?.errors?.['pattern']) {
+                    <small>Enter a valid 6-digit code</small>
+                  }
+                </div>
+              }
+            </form>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

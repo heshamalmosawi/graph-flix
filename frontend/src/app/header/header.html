@@ -8,6 +8,9 @@
     <a class="nav-link watchlist-link" routerLink="/watchlist">
       📋 Watchlist
     </a>
+    <a class="nav-link" routerLink="/settings/security">
+      🔒 Security
+    </a>
     }
     @if ((isLoggedIn$ | async) === false) {
     <button class="login-btn" routerLink="/auth">Login</button>

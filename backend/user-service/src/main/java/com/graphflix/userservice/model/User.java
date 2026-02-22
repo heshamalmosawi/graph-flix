@@ -2,6 +2,7 @@ package com.graphflix.userservice.model;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.Version;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
@@ -21,6 +22,9 @@ public class User {
     @Id
     private String id;
 
+    @Version
+    private Long version;
+
     @Property("name")
     private String name;
 
@@ -33,4 +37,15 @@ public class User {
     @Property("createdAt")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Property("twoFactorEnabled")
+    @Builder.Default
+    private boolean twoFactorEnabled = false;
+
+    @Property("totpSecret")
+    private String totpSecret;
+
+    @Property("tokenVersion")
+    @Builder.Default
+    private int tokenVersion = 0;
 }

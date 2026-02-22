@@ -1,5 +1,7 @@
 package com.graphflix.userservice.service;
 
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ public class AuthService {
         validateEmailNotTaken(req.getEmail());
 
         User user = User.builder()
+                .id(UUID.randomUUID().toString())
                 .name(req.getName())
                 .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
@@ -60,6 +63,11 @@ public class AuthService {
         if (userRepo.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already in use");
         }
+    }
+
+    public User findUserByEmail(String email) {
+        return userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public LoginResponse loginUser(LoginRequest req) {

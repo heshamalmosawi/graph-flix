@@ -56,8 +56,13 @@ export class AuthComponent {
       this.authService.login({ email, password }).subscribe({
         next: (res) => {
           this.isLoading = false;
-          this.toastService.success('Login successful!');
-          this.router.navigate(['/']);
+          if (res.status === '2FA_REQUIRED') {
+            this.toastService.info('Please complete two-factor authentication');
+            this.router.navigate(['/auth/2fa/verify']);
+          } else {
+            this.toastService.success('Login successful!');
+            this.router.navigate(['/']);
+          }
         },
         error: (err) => {
           this.isLoading = false;
