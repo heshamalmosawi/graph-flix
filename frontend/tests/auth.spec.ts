@@ -16,7 +16,7 @@ test('login success shows toast and redirects', async ({ page }) => {
 
   // Use ID selectors
   await page.fill('#email', 'test@example.com');
-  await page.fill('#password', 'password123');
+  await page.fill('#password', 'password12345');
   
   await page.click('button[type="submit"]');
   
@@ -38,7 +38,7 @@ test('login failure shows error toast', async ({ page }) => {
   await page.waitForSelector('form', { state: 'visible' });
 
   await page.fill('#email', 'wrong@example.com');
-  await page.fill('#password', 'wrongpass');
+  await page.fill('#password', 'wrongpass123');
   
   await page.click('button[type="submit"]');
   

@@ -56,10 +56,10 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest();
         request.setName("Jane Doe");
         request.setEmail("jane@example.com");
-        request.setPassword("password123");
+        request.setPassword("password12345");
 
         when(userRepo.findByEmail("jane@example.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(passwordEncoder.encode("password12345")).thenReturn("encodedPassword");
         when(userRepo.save(any(User.class))).thenReturn(testUser);
 
         assertDoesNotThrow(() -> authService.registerUser(request));
@@ -71,7 +71,7 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest();
         request.setName("John Doe");
         request.setEmail("john@example.com");
-        request.setPassword("password123");
+        request.setPassword("password12345");
 
         when(userRepo.findByEmail("john@example.com")).thenReturn(Optional.of(testUser));
 
@@ -84,7 +84,7 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest();
         request.setName("John Doe");
         request.setEmail("invalid-email");
-        request.setPassword("password123");
+        request.setPassword("password12345");
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
         assertNotNull(exception.getMessage());
@@ -95,7 +95,29 @@ class AuthServiceTest {
         RegisterRequest request = new RegisterRequest();
         request.setName("John Doe");
         request.setEmail("john@example.com");
-        request.setPassword("123");
+        request.setPassword("pass");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
+        assertNotNull(exception.getMessage());
+    }
+
+    @Test
+    void registerUser_WithoutLetter_ShouldThrowException() {
+        RegisterRequest request = new RegisterRequest();
+        request.setName("John Doe");
+        request.setEmail("john@example.com");
+        request.setPassword("12345678");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
+        assertNotNull(exception.getMessage());
+    }
+
+    @Test
+    void registerUser_WithoutDigit_ShouldThrowException() {
+        RegisterRequest request = new RegisterRequest();
+        request.setName("John Doe");
+        request.setEmail("john@example.com");
+        request.setPassword("password");
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.registerUser(request));
         assertNotNull(exception.getMessage());
@@ -105,10 +127,10 @@ class AuthServiceTest {
     void loginUser_WithValidCredentials_ShouldReturnLoginResponse() {
         LoginRequest request = new LoginRequest();
         request.setEmail("john@example.com");
-        request.setPassword("password123");
+        request.setPassword("password12345");
 
         when(userRepo.findByEmail("john@example.com")).thenReturn(Optional.of(testUser));
-        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
+        when(passwordEncoder.matches("password12345", "encodedPassword")).thenReturn(true);
         when(jwtService.generateToken(any(User.class))).thenReturn("mock-jwt-token");
 
         LoginResponse result = authService.loginUser(request);
@@ -122,7 +144,7 @@ class AuthServiceTest {
     void loginUser_WithInvalidEmail_ShouldThrowException() {
         LoginRequest request = new LoginRequest();
         request.setEmail("nonexistent@example.com");
-        request.setPassword("password123");
+        request.setPassword("password12345");
 
         when(userRepo.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
 

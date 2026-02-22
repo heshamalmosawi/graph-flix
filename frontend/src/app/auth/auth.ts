@@ -1,9 +1,23 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { ToastService } from '../shared/toast/toast.service';
+
+function passwordValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.value;
+  if (!password) {
+    return null;
+  }
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasDigit = /[0-9]/.test(password);
+  
+  if (!hasLetter || !hasDigit) {
+    return { passwordComplexity: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-auth',
@@ -26,7 +40,7 @@ export class AuthComponent {
     this.authForm = this.fb.group({
       name: [''],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(8), passwordValidator]]
     });
   }
 
