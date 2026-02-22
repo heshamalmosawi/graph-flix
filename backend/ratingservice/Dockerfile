@@ -10,6 +10,6 @@ COPY src ./src
 RUN chmod +x ./mvnw
 RUN ./mvnw clean package -DskipTests
 
-EXPOSE 8761
+EXPOSE 8443
 
-CMD ["java", "-jar", "target/eurekaserver-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/ratingservice-0.0.1-SNAPSHOT.jar"]

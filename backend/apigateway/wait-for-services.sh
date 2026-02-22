@@ -5,7 +5,7 @@ echo "Waiting for services to be ready..."
 
 # Wait for Eureka server
 echo "Checking Eureka server..."
-sleep 10
+sleep 15
 
 
 echo "Eureka server is ready!"

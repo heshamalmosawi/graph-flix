@@ -1,4 +1,4 @@
-FROM eclipse-temurin:24-jdk
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
@@ -12,4 +12,4 @@ RUN ./mvnw clean package -DskipTests
 
 EXPOSE 8443
 
-CMD ["java", "-jar", "target/userservice-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/userservice-1.0.0.jar"]

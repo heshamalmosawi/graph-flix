@@ -1,0 +1,145 @@
+services:
+  # Kafka Services
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - backend-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - backend-network
+
+
+  # Service Discovery
+  eureka-server:
+    build:
+      context: ./backend/eureka-service-discovery
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Microservices
+  movieservice:
+    build:
+      context: ./backend/movieservice
+      dockerfile: Dockerfile
+    container_name: movieservice
+    env_file:
+      - ./backend/movieservice/.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    env_file:
+      - ./backend/user-service/.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    depends_on:
+      - eureka-server
+      - kafka
+    restart: unless-stopped
+
+  ratingservice:
+    build:
+      context: ./backend/ratingservice
+      dockerfile: Dockerfile
+    container_name: ratingservice
+    env_file:
+      - ./backend/ratingservice/.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    depends_on:
+      - eureka-server
+      - kafka
+    restart: unless-stopped
+
+  recommendationservice:
+    build:
+      context: ./backend/recommendationservice
+      dockerfile: Dockerfile
+    container_name: recommendationservice
+    env_file:
+      - ./backend/recommendationservice/.env
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    depends_on:
+      - eureka-server
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/apigateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8443:8443"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+    depends_on:
+      - eureka-server
+      - movieservice
+      - user-service
+      - ratingservice
+      - recommendationservice
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    container_name: frontend
+    ports:
+      - "2122:2122"
+    networks:
+      - backend-network
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+networks:
+  backend-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
