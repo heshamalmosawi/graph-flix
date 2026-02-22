@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -85,7 +86,7 @@ public class AuthController {
             String token = extractToken(authHeader);
 
             if (!jwtService.isTemporaryToken(token)) {
-                return ResponseEntity.badRequest().body("Invalid token type");
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid token type"));
             }
 
             String email = jwtService.extractEmail(token);
@@ -94,7 +95,7 @@ public class AuthController {
 
             int tokenVersion = jwtService.extractVersion(token);
             if (user.getTokenVersion() != tokenVersion) {
-                return ResponseEntity.badRequest().body("Token version mismatch");
+                return ResponseEntity.badRequest().body(Map.of("error", "Token version mismatch"));
             }
 
             String secretKey = userRepository.getTotpSecret(email);
@@ -109,14 +110,15 @@ public class AuthController {
                         .build());
             }
 
-            return ResponseEntity.badRequest().body("Invalid code");
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid code"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/2fa/setup")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<Map<String, String>> setup2FA(Principal principal) {
         try {
             String email = principal.getName();
@@ -150,6 +152,7 @@ public class AuthController {
 
     @PostMapping("/2fa/enable")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<Map<String, String>> enable2FA(
             Principal principal,
             @RequestBody TwoFactorRequest request) {
@@ -192,6 +195,7 @@ public class AuthController {
 
     @PostMapping("/2fa/disable")
     @PreAuthorize("isAuthenticated()")
+    @Transactional
     public ResponseEntity<Map<String, String>> disable2FA(
             Principal principal,
             @RequestBody TwoFactorRequest request) {
