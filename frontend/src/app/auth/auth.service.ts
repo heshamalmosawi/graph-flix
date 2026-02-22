@@ -38,6 +38,11 @@ export class AuthService {
     if (storedUser) {
       this.userSubject.next(JSON.parse(storedUser));
     }
+
+    const storedTemporaryToken = localStorage.getItem('temporaryToken');
+    if (storedTemporaryToken) {
+      this.temporaryToken = storedTemporaryToken;
+    }
   }
 
   login(credentials: any): Observable<LoginResponse> {
@@ -73,7 +78,7 @@ export class AuthService {
   }
 
   is2FARequired(): boolean {
-    return this.temporaryToken !== null;
+    return this.temporaryToken !== null || localStorage.getItem('temporaryToken') !== null;
   }
 
   getTemporaryToken(): string | null {
