@@ -17,7 +17,7 @@ import com.graphflix.userservice.util.EmailValidator;
 public class AuthService {
 
     private static final long TOKEN_EXPIRATION_MS = 1000L * 60 * 60 * 24 * 3; // 3 days in milliseconds
-    private static final int MIN_PASSWORD_LENGTH = 6;
+    private static final int MIN_PASSWORD_LENGTH = 8;
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -55,8 +55,29 @@ public class AuthService {
         }
         EmailValidator.validate(req.getEmail());
         if (req.getPassword().length() < MIN_PASSWORD_LENGTH) {
-            throw new RuntimeException("Password must be at least 6 characters long");
+            throw new RuntimeException("Password must be at least 8 characters long");
         }
+        if (!containsLetter(req.getPassword()) || !containsDigit(req.getPassword())) {
+            throw new RuntimeException("Password must contain at least one letter and one digit");
+        }
+    }
+
+    private boolean containsLetter(String password) {
+        for (char c : password.toCharArray()) {
+            if (Character.isLetter(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsDigit(String password) {
+        for (char c : password.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void validateEmailNotTaken(String email) {

@@ -52,7 +52,10 @@
             <small>Password is required</small>
             }
             @if (authForm.get('password')?.errors?.['minlength']) {
-            <small>Password must be at least 6 characters</small>
+            <small>Password must be at least 8 characters</small>
+            }
+            @if (authForm.get('password')?.errors?.['passwordComplexity']) {
+            <small>Password must contain at least one letter and one digit</small>
             }
         </div>
         }
